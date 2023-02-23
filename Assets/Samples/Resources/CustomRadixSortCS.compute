@@ -1,0 +1,15 @@
+﻿#pragma kernel RadixSortLocal
+#pragma kernel GlobalShuffle
+
+struct CustomStruct
+{
+    uint key;
+    uint id;
+    float dummy1;
+    float dummy2;
+};
+
+#define DATA_TYPE CustomStruct  // input data struct
+#define GET_KEY(s) s.key        // how to get the key-values used for sorting
+
+#include "Assets/Packages/GPUBufferOperators/GPURadixSort.hlsl"

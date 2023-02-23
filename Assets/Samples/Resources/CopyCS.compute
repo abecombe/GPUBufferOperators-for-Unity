@@ -1,0 +1,60 @@
+﻿#pragma kernel CopySortBuffer
+#pragma kernel CopyScanBuffer
+#pragma kernel CopyFilteringBuffer
+#pragma kernel CopyCustomSortBuffer
+
+#define NUM_GROUP_THREADS 128
+
+StructuredBuffer<uint2> sort_temp_buffer;
+RWStructuredBuffer<uint2> sort_data_buffer;
+
+StructuredBuffer<uint> scan_temp_buffer;
+RWStructuredBuffer<uint> scan_data_buffer;
+
+StructuredBuffer<uint2> filtering_temp_buffer;
+RWStructuredBuffer<uint2> filtering_data_buffer;
+
+struct CustomStruct
+{
+    uint key;
+    uint id;
+    float dummy1;
+    float dummy2;
+};
+StructuredBuffer<CustomStruct> custom_sort_temp_buffer;
+RWStructuredBuffer<CustomStruct> custom_sort_data_buffer;
+
+int num_elements;
+int group_offset;
+
+[numthreads(NUM_GROUP_THREADS, 1, 1)]
+void CopySortBuffer(int thread_id : SV_DispatchThreadID)
+{
+    thread_id += group_offset * NUM_GROUP_THREADS;
+    if (thread_id < num_elements)
+        sort_data_buffer[thread_id] = sort_temp_buffer[thread_id];
+}
+
+[numthreads(NUM_GROUP_THREADS, 1, 1)]
+void CopyScanBuffer(int thread_id : SV_DispatchThreadID)
+{
+    thread_id += group_offset * NUM_GROUP_THREADS;
+    if (thread_id < num_elements)
+        scan_data_buffer[thread_id] = scan_temp_buffer[thread_id];
+}
+
+[numthreads(NUM_GROUP_THREADS, 1, 1)]
+void CopyFilteringBuffer(int thread_id : SV_DispatchThreadID)
+{
+    thread_id += group_offset * NUM_GROUP_THREADS;
+    if (thread_id < num_elements)
+        filtering_data_buffer[thread_id] = filtering_temp_buffer[thread_id];
+}
+
+[numthreads(NUM_GROUP_THREADS, 1, 1)]
+void CopyCustomSortBuffer(int thread_id : SV_DispatchThreadID)
+{
+    thread_id += group_offset * NUM_GROUP_THREADS;
+    if (thread_id < num_elements)
+        custom_sort_data_buffer[thread_id] = custom_sort_temp_buffer[thread_id];
+}
