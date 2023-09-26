@@ -2,7 +2,7 @@
 
 **GPU Radix Sort using Compute Shader**
 
-**Based on [Fast 4-way parallel radix sorting on GPUs](https://vgc.poly.edu/~csilva/papers/cgf.pdf)**
+**Based on [Fast 4-way parallel radix sorting on GPUs](http://www.sci.utah.edu/publications/Ha2009b/Ha_CGF2009.pdf)**
 
 **The key type used for sorting is limited to `uint`.**
 
@@ -91,6 +91,6 @@ void OnDestroy() {
 ```
 
 # References
-* **[Fast 4-way parallel radix sorting on GPUs](https://vgc.poly.edu/~csilva/papers/cgf.pdf)**  
+* **[Fast 4-way parallel radix sorting on GPUs](http://www.sci.utah.edu/publications/Ha2009b/Ha_CGF2009.pdf)**  
 * **[Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)**  
 * **[GPU Radix Sort](https://github.com/mark-poscablo/gpu-radix-sort)**
