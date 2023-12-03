@@ -26,6 +26,8 @@ namespace Abecombe.GPUBufferOperators
         // size: number of groups
         private GraphicsBuffer _globalPrefixSumBuffer;
 
+        private uint _numFilteredElements = 0;
+
         private bool _inited = false;
 
         protected virtual void LoadComputeShader()
@@ -46,11 +48,31 @@ namespace Abecombe.GPUBufferOperators
         /// Gather elements that meet certain condition to the front of the buffer
         /// </summary>
         /// <param name="dataBuffer">data buffer to be filtered</param>
-        /// <param name="returnNumFilteredElements">whether this function should return the number of filtered elements</param>
-        /// <returns>the number of filtered elements (only when returnNumFilteredElements is true)</returns>
-        public uint Filter(GraphicsBuffer dataBuffer, bool returnNumFilteredElements = false)
+        public void Filter(GraphicsBuffer dataBuffer)
         {
-            return Filter(dataBuffer, null, 0, returnNumFilteredElements);
+            Filter(dataBuffer, null, 0, false);
+        }
+
+        /// <summary>
+        /// Gather elements that meet certain condition to the front of the buffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be filtered</param>
+        /// <param name="numFilteredElements">the number of filtered elements</param>
+        public void Filter(GraphicsBuffer dataBuffer, out uint numFilteredElements)
+        {
+            Filter(dataBuffer, null, 0, true);
+            numFilteredElements = _numFilteredElements;
+        }
+
+        /// <summary>
+        /// Gather elements that meet certain condition to the front of the buffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be filtered</param>
+        /// <param name="numBuffer">uint buffer to store the number of filtered elements</param>
+        /// <param name="bufferOffset">index of the element in the numBuffer to store the number of filtered elements</param>
+        public void Filter(GraphicsBuffer dataBuffer, GraphicsBuffer numBuffer, uint bufferOffset = 0)
+        {
+            Filter(dataBuffer, numBuffer, bufferOffset, false);
         }
 
         /// <summary>
@@ -60,8 +82,7 @@ namespace Abecombe.GPUBufferOperators
         /// <param name="numBuffer">uint buffer to store the number of filtered elements</param>
         /// <param name="bufferOffset">index of the element in the numBuffer to store the number of filtered elements</param>
         /// <param name="returnNumFilteredElements">whether this function should return the number of filtered elements</param>
-        /// <returns>the number of filtered elements (only when returnNumFilteredElements is true)</returns>
-        public uint Filter(GraphicsBuffer dataBuffer, GraphicsBuffer numBuffer, uint bufferOffset, bool returnNumFilteredElements = false)
+        private void Filter(GraphicsBuffer dataBuffer, GraphicsBuffer numBuffer, uint bufferOffset, bool returnNumFilteredElements = false)
         {
             if (!_inited) Init();
 
@@ -89,9 +110,12 @@ namespace Abecombe.GPUBufferOperators
             }
 
             // prefix scan global group sum data
-            uint numFilteredElements = numBuffer is not null
-                ? _prefixScan.Scan(_globalPrefixSumBuffer, numBuffer, bufferOffset, returnNumFilteredElements)
-                : _prefixScan.Scan(_globalPrefixSumBuffer, returnNumFilteredElements);
+            if (numBuffer is not null)
+                _prefixScan.Scan(_globalPrefixSumBuffer, numBuffer, bufferOffset);
+            else if (returnNumFilteredElements)
+                _prefixScan.Scan(_globalPrefixSumBuffer, out _numFilteredElements);
+            else
+                _prefixScan.Scan(_globalPrefixSumBuffer);
 
             // copy input data to final position in global memory
             cs.SetBuffer(k_shuffle, "data_in_buffer", _tempBuffer);
@@ -103,8 +127,6 @@ namespace Abecombe.GPUBufferOperators
                 cs.SetInt("group_offset", i);
                 cs.Dispatch(k_shuffle, Mathf.Min(numGroups - i, MaxDispatchSize), 1, 1);
             }
-
-            return numFilteredElements;
         }
 
         private void CheckBufferSizeChanged(int numElements, int numGroups, int bufferStride)

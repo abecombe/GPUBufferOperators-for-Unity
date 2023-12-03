@@ -72,16 +72,13 @@ GPUFiltering filtering = new();
 
 ### Filter
 ```csharp
-uint value = filtering.Filter(GraphicsBuffer DataBuffer, bool returnNumFilteredElements = false);
+filtering.Filter(GraphicsBuffer DataBuffer, out uint numFilteredElements);
 ```
 * **DataBuffer**  
   * data buffer to be filtered
 
-* **returnNumFilteredElements**  
-  * whether this function should return the number of filtered elements
-
-* **return value**  
-  * the number of filtered elements (only when returnNumFilteredElements is true)
+* **numFilteredElements**  
+  * the number of filtered elements
 
 ### Dispose
 ```csharp

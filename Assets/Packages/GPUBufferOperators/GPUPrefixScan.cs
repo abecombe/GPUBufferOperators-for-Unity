@@ -45,13 +45,20 @@ namespace Abecombe.GPUBufferOperators
         /// Prefix scan on dataBuffer
         /// </summary>
         /// <param name="dataBuffer">data buffer to be scanned</param>
-        /// <param name="returnTotalSum">whether this function should return the total sum of values</param>
-        /// <returns>the total sum of values (only when returnTotalSum is true)</returns>
-        public uint Scan(GraphicsBuffer dataBuffer, bool returnTotalSum = false)
+        public void Scan(GraphicsBuffer dataBuffer)
         {
-            Scan(dataBuffer, null, 0, returnTotalSum, 0);
+            Scan(dataBuffer, null, 0, false, 0);
+        }
 
-            return _totalSum;
+        /// <summary>
+        /// Prefix scan on dataBuffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be scanned</param>
+        /// <param name="totalSum">the total sum of values</param>
+        public void Scan(GraphicsBuffer dataBuffer, out uint totalSum)
+        {
+            Scan(dataBuffer, null, 0, true, 0);
+            totalSum = _totalSum;
         }
 
         /// <summary>
@@ -60,13 +67,9 @@ namespace Abecombe.GPUBufferOperators
         /// <param name="dataBuffer">data buffer to be scanned</param>
         /// <param name="totalSumBuffer">data buffer to store the total sum</param>
         /// <param name="bufferOffset">index of the element in the totalSumBuffer to store the total sum</param>
-        /// <param name="returnTotalSum">whether this function should return the total sum of values</param>
-        /// <returns>the total sum of values (only when returnTotalSum is true)</returns>
-        public uint Scan(GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset, bool returnTotalSum = false)
+        public void Scan(GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset = 0)
         {
-            Scan(dataBuffer, totalSumBuffer, bufferOffset, returnTotalSum, 0);
-
-            return _totalSum;
+            Scan(dataBuffer, totalSumBuffer, bufferOffset, false, 0);
         }
 
         private void Scan(GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset, bool returnTotalSum, int bufferIndex)

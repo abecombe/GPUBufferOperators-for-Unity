@@ -54,7 +54,7 @@ public class FilteringSample : MonoBehaviour
             _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
         }
 
-        uint sum2 = _filtering.Filter(_dataBuffer, true);
+        _filtering.Filter(_dataBuffer, out uint sum2);
 
         if (sum1 != sum2)
         {

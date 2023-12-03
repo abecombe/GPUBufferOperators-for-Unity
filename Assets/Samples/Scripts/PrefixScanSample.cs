@@ -52,7 +52,7 @@ public class PrefixScanSample : MonoBehaviour
             _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
         }
 
-        uint sum2 = _prefixScan.Scan(_dataBuffer, true);
+        _prefixScan.Scan(_dataBuffer, out uint sum2);
 
         _dataBuffer.GetData(dataArr2);
         for (int i = 0; i < _numData - 1; i++)
