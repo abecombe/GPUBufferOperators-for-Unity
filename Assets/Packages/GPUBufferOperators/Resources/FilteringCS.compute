@@ -4,4 +4,4 @@
 #define DATA_TYPE uint2        // input data struct
 #define GET_KEY(s) (s.x == 1)  // certain condition used for filtering
 
-#include "Assets/Packages/GPUBufferOperators/GPUFiltering.hlsl"
+#include "../GPUFiltering.hlsl"

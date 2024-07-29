@@ -1,4 +1,4 @@
 ﻿#pragma kernel PrefixScan
 #pragma kernel AddGroupSum
 
-#include "Assets/Packages/GPUBufferOperators/GPUPrefixScan.hlsl"
+#include "../GPUPrefixScan.hlsl"
