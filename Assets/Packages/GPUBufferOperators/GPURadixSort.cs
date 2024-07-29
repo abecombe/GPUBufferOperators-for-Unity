@@ -5,6 +5,9 @@ namespace Abecombe.GPUBufferOperators
 {
     public class GPURadixSort : IDisposable
     {
+        // we use 16-way radix sort
+        private const int NWay = 16;
+
         private const int NumGroupThreads = 128;
         private const int NumElementsPerGroup = NumGroupThreads;
 
@@ -19,11 +22,11 @@ namespace Abecombe.GPUBufferOperators
         // buffer to store the locally sorted input data
         // size: number of data
         private GraphicsBuffer _tempBuffer;
-        // buffer to store the first index of each 2bit key-value (0, 1, 2, 3) within locally sorted groups
-        // size: 4 * number of groups
+        // buffer to store the first index of each 4bit key-value (0, 1, 2, ..., 16) within locally sorted groups
+        // size: 16 * number of groups
         private GraphicsBuffer _firstIndexBuffer;
-        // buffer to store the sums of each 2bit key-value (0, 1, 2, 3) within locally sorted groups
-        // size: 4 * number of groups
+        // buffer to store the sums of each 4bit key-value (0, 1, 2, ..., 16) within locally sorted groups
+        // size: 16 * number of groups
         private GraphicsBuffer _groupSumBuffer;
 
         private bool _inited = false;
@@ -44,6 +47,7 @@ namespace Abecombe.GPUBufferOperators
 
         // Implementation of Paper "Fast 4-way parallel radix sorting on GPUs"
         // https://vgc.poly.edu/~csilva/papers/cgf.pdf
+        // (we use 16-way radix sort)
 
         // GPURadixSort has O(n * s * w) complexity
         // n : number of data
@@ -82,11 +86,11 @@ namespace Abecombe.GPUBufferOperators
             cs.SetBuffer(k_shuffle, "global_prefix_sum_buffer", _groupSumBuffer);
 
             int firstBitHigh = Convert.ToString(maxValue, 2).Length;
-            for (int bitShift = 0; bitShift < firstBitHigh; bitShift += 2)
+            for (int bitShift = 0; bitShift < firstBitHigh; bitShift += Convert.ToString(NWay, 2).Length - 1)
             {
                 cs.SetInt("bit_shift", bitShift);
 
-                // sort input data locally and output first-index / sums of each 2bit key-value within groups
+                // sort input data locally and output first-index / sums of each 4bit key-value within groups
                 for (int i = 0; i < numGroups; i += MaxDispatchSize)
                 {
                     cs.SetInt("group_offset", i);
@@ -112,15 +116,15 @@ namespace Abecombe.GPUBufferOperators
                 _tempBuffer?.Release();
                 _tempBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, numElements, bufferStride);
             }
-            if (_firstIndexBuffer is null || _firstIndexBuffer.count < 4 * numGroups)
+            if (_firstIndexBuffer is null || _firstIndexBuffer.count < NWay * numGroups)
             {
                 _firstIndexBuffer?.Release();
-                _firstIndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 4 * numGroups, sizeof(uint));
+                _firstIndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, NWay * numGroups, sizeof(uint));
             }
-            if (_groupSumBuffer is null || _groupSumBuffer.count != 4 * numGroups)
+            if (_groupSumBuffer is null || _groupSumBuffer.count != NWay * numGroups)
             {
                 _groupSumBuffer?.Release();
-                _groupSumBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 4 * numGroups, sizeof(uint));
+                _groupSumBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, NWay * numGroups, sizeof(uint));
             }
         }
 

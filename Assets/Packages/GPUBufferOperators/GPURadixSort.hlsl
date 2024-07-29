@@ -30,9 +30,9 @@ static const int num_elements_per_group = NUM_GROUP_THREADS;
 static const int log_num_elements_per_group = log2(num_elements_per_group);
 static const int num_elements_per_group_1 = num_elements_per_group - 1;
 
-static const int n_way = 4;
+static const int n_way = 16;
 static const int n_way_1 = n_way - 1;
-static const int4 n_way_arr = int4(0, 1, 2, 3);
+static const uint4 n_way_arr = int4(0, 1, 2, 3);
 
 static const int s_data_len = num_elements_per_group;
 static const int s_scan_len = num_elements_per_group;
@@ -43,7 +43,7 @@ groupshared uint4 s_scan[s_scan_len];
 groupshared uint s_Pd[s_Pd_len];
 
 /**
- * \brief sort input data locally and output first-index / sums of each 2bit key-value within groups
+ * \brief sort input data locally and output first-index / sums of each 4bit key-value within groups
  */
 [numthreads(NUM_GROUP_THREADS, 1, 1)]
 void RadixSortLocal(int group_thread_id : SV_GroupThreadID, int group_id : SV_GroupID)
@@ -51,25 +51,27 @@ void RadixSortLocal(int group_thread_id : SV_GroupThreadID, int group_id : SV_Gr
     group_id += group_offset;
     int global_id = num_elements_per_group * group_id + group_thread_id;
 
-    // extract 2 bits
+    // extract 4 bits
     DATA_TYPE data;
-    int key_2_bit = n_way_1;
+    int key_4_bit = n_way_1;
     if (global_id < num_elements)
     {
         data = data_in_buffer[global_id];
-        key_2_bit = ((GET_KEY(data)) >> bit_shift) & n_way_1;
+        key_4_bit = ((GET_KEY(data)) >> bit_shift) & n_way_1;
     }
 
     // build scan data
-    s_scan[group_thread_id] = (key_2_bit == n_way_arr);
+    s_scan[group_thread_id] = (uint4)(key_4_bit % 4u == n_way_arr) << ((key_4_bit / 4u) * 8u);
     GroupMemoryBarrierWithGroupSync();
 
     // Hillis-Steele scan
+    uint4 sum;
+    int partner;
     [unroll(log_num_elements_per_group)]
     for (int offset = 1;; offset <<= 1)
     {
-        uint4 sum = s_scan[group_thread_id];
-        int partner = group_thread_id - offset;
+        sum = s_scan[group_thread_id];
+        partner = group_thread_id - offset;
         if (partner >= 0)
         {
             sum += s_scan[partner];
@@ -79,30 +81,32 @@ void RadixSortLocal(int group_thread_id : SV_GroupThreadID, int group_id : SV_Gr
         GroupMemoryBarrierWithGroupSync();
     }
 
-    // calculate first index of each 2bit key-value
-    uint4 total = s_scan[num_elements_per_group_1];
-    uint4 first_index;
+    // calculate first index of each 4bit key-value
+    const uint4 temp_total = s_scan[num_elements_per_group_1];
+    uint total[n_way];
+    uint first_index[n_way];
     uint run_sum = 0;
     [unroll(n_way)]
     for (int i = 0;; ++i)
     {
         first_index[i] = run_sum;
+        total[i] = (temp_total[i % 4u] >> ((i / 4u) * 8)) & 0x000000ffu;
         run_sum += total[i];
     }
 
     if (group_thread_id < n_way)
     {
-        // copy sums of each 2bit key-value to global memory
+        // copy sums of each 4bit key-value to global memory
         group_sum_buffer[group_thread_id * num_groups + group_id] = total[group_thread_id];
-        // copy first index of each 2bit key-value to global memory
+        // copy first index of each 4bit key-value to global memory
         first_index_buffer[group_thread_id + n_way * group_id] = first_index[group_thread_id];
     }
 
     // sort the input data locally
-    int new_id = first_index[key_2_bit];
+    int new_id = first_index[key_4_bit];
     if (group_thread_id > 0)
     {
-        new_id += s_scan[group_thread_id - 1][key_2_bit];
+        new_id += (s_scan[group_thread_id - 1][key_4_bit % 4u] >> ((key_4_bit / 4u) * 8)) & 0x000000ffu;
     }
     s_data[new_id] = data;
 
@@ -126,9 +130,9 @@ void GlobalShuffle(int group_thread_id : SV_GroupThreadID, int group_id : SV_Gro
 
     if (group_thread_id < n_way)
     {
-        // set global destination of each 2bit key-value
+        // set global destination of each 4bit key-value
         s_Pd[group_thread_id] = global_prefix_sum_buffer[group_thread_id * num_groups + group_id];
-        // subtract the first index of each 2bit key-value
+        // subtract the first index of each 4bit key-value
         // to make it easier to calculate the final destination of individual data
         s_Pd[group_thread_id] -= first_index_buffer[group_thread_id + n_way * group_id];
     }
@@ -138,9 +142,9 @@ void GlobalShuffle(int group_thread_id : SV_GroupThreadID, int group_id : SV_Gro
     if (global_id < num_elements)
     {
         DATA_TYPE data = data_in_buffer[global_id];
-        int key_2_bit = ((GET_KEY(data)) >> bit_shift) & n_way_1;
+        int key_4_bit = ((GET_KEY(data)) >> bit_shift) & n_way_1;
 
-        int new_id = group_thread_id + s_Pd[key_2_bit];
+        int new_id = group_thread_id + s_Pd[key_4_bit];
 
         // copy data to the final destination
         data_out_buffer[new_id] = data;
