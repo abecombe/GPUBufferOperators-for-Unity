@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Abecombe.GPUBufferOperators;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -53,14 +54,14 @@ public class CustomRadixSortSample : MonoBehaviour
         _tempBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _numData, Marshal.SizeOf(typeof(CustomStruct)));
 
         CustomStruct[] dataArr = new CustomStruct[_numData];
-        List<uint> dataList = new List<uint>();
+        List<CustomStruct> dataList = new List<CustomStruct>();
 
         Random.InitState(_randomSeed);
         for (uint i = 0; i < _numData; i++)
         {
             uint value = (uint)Random.Range(0, (int)_randomValueMax + 1);
             dataArr[i] = new CustomStruct(value, i, 10f, 20f);
-            dataList.Add(value);
+            dataList.Add(new CustomStruct(value, i, 10f, 20f));
         }
         _tempBuffer.SetData(dataArr);
 
@@ -79,11 +80,11 @@ public class CustomRadixSortSample : MonoBehaviour
 
         _radixSort.Sort(_dataBuffer, _randomValueMax);
 
-        dataList.Sort();
+        dataList = dataList.OrderBy(data => data.Key).ToList();
         _dataBuffer.GetData(dataArr);
         for (int i = 0; i < _numData - 1; i++)
         {
-            if (dataArr[i].Key != dataList[i])
+            if (dataArr[i].Key != dataList[i].Key || dataArr[i].ID != dataList[i].ID || dataArr[i].Dummy1 != dataList[i].Dummy1 || dataArr[i].Dummy2 != dataList[i].Dummy2)
             {
                 Debug.LogError("Sorting Failure");
                 break;

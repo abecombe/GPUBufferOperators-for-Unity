@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Abecombe.GPUBufferOperators;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
@@ -30,14 +31,14 @@ public class RadixSortSample : MonoBehaviour
         _tempBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _numData, Marshal.SizeOf(typeof(uint2)));
 
         uint2[] dataArr = new uint2[_numData];
-        List<uint> dataList = new List<uint>();
+        List<uint2> dataList = new List<uint2>();
 
         Random.InitState(_randomSeed);
         for (uint i = 0; i < _numData; i++)
         {
             uint value = (uint)Random.Range(0, (int)_randomValueMax + 1);
             dataArr[i] = new uint2(value, i);
-            dataList.Add(value);
+            dataList.Add(new uint2(value, i));
         }
         _tempBuffer.SetData(dataArr);
 
@@ -56,11 +57,11 @@ public class RadixSortSample : MonoBehaviour
 
         _radixSort.Sort(_dataBuffer, _randomValueMax);
 
-        dataList.Sort();
+        dataList = dataList.OrderBy(data => data.x).ToList();
         _dataBuffer.GetData(dataArr);
         for (int i = 0; i < _numData - 1; i++)
         {
-            if (dataArr[i].x != dataList[i])
+            if (dataArr[i].x != dataList[i].x || dataArr[i].y != dataList[i].y)
             {
                 Debug.LogError("Sorting Failure");
                 break;

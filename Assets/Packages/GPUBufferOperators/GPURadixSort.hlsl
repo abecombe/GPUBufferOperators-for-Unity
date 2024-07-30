@@ -21,39 +21,52 @@ RWStructuredBuffer<uint> first_index_buffer;
 RWStructuredBuffer<uint> group_sum_buffer;
 StructuredBuffer<uint> global_prefix_sum_buffer;
 
-int num_elements;
-int num_groups;
-int group_offset;
-int bit_shift;
+uint num_elements;
+uint num_groups;
+uint group_offset;
+uint bit_shift;
 
-static const int num_elements_per_group = NUM_GROUP_THREADS;
-static const int log_num_elements_per_group = log2(num_elements_per_group);
-static const int num_elements_per_group_1 = num_elements_per_group - 1;
+static const uint num_elements_per_group = NUM_GROUP_THREADS;
+static const uint log_num_elements_per_group = log2(num_elements_per_group);
+static const uint num_elements_per_group_1 = num_elements_per_group - 1u;
 
-static const int n_way = 16;
-static const int n_way_1 = n_way - 1;
-static const uint4 n_way_arr = int4(0, 1, 2, 3);
+static const uint n_way = 16u;
+static const uint n_way_1 = n_way - 1u;
 
-static const int s_data_len = num_elements_per_group;
-static const int s_scan_len = num_elements_per_group;
-static const int s_Pd_len = n_way;
+static const uint s_data_len = num_elements_per_group;
+static const uint s_scan_len = num_elements_per_group;
+static const uint s_Pd_len = n_way;
 
 groupshared DATA_TYPE s_data[s_data_len];
 groupshared uint4 s_scan[s_scan_len];
 groupshared uint s_Pd[s_Pd_len];
 
+inline uint get_value_in_uint16(uint4 uint16_value, uint key)
+{
+    return (uint16_value[key % 4u] >> (key / 4u * 8u)) & 0x000000ffu;
+}
+inline void set_value_in_uint16(inout uint4 uint16_value, uint value, uint key)
+{
+    uint16_value[key % 4u] += value << (key / 4u * 8u);
+}
+inline uint4 build_s_scan_data(uint key_4_bit)
+{
+    return (uint4)(key_4_bit % 4u == uint4(0u, 1u, 2u, 3u)) << ((key_4_bit / 4u) * 8u);
+}
+
+
 /**
  * \brief sort input data locally and output first-index / sums of each 4bit key-value within groups
  */
 [numthreads(NUM_GROUP_THREADS, 1, 1)]
-void RadixSortLocal(int group_thread_id : SV_GroupThreadID, int group_id : SV_GroupID)
+void RadixSortLocal(uint group_thread_id : SV_GroupThreadID, uint group_id : SV_GroupID)
 {
     group_id += group_offset;
-    int global_id = num_elements_per_group * group_id + group_thread_id;
+    uint global_id = num_elements_per_group * group_id + group_thread_id;
 
     // extract 4 bits
     DATA_TYPE data;
-    int key_4_bit = n_way_1;
+    uint key_4_bit = n_way_1;
     if (global_id < num_elements)
     {
         data = data_in_buffer[global_id];
@@ -61,20 +74,17 @@ void RadixSortLocal(int group_thread_id : SV_GroupThreadID, int group_id : SV_Gr
     }
 
     // build scan data
-    s_scan[group_thread_id] = (uint4)(key_4_bit % 4u == n_way_arr) << ((key_4_bit / 4u) * 8u);
+    s_scan[group_thread_id] = build_s_scan_data(key_4_bit);
     GroupMemoryBarrierWithGroupSync();
 
     // Hillis-Steele scan
-    uint4 sum;
-    int partner;
     [unroll(log_num_elements_per_group)]
-    for (int offset = 1;; offset <<= 1)
+    for (uint offset = 1u;; offset <<= 1u)
     {
-        sum = s_scan[group_thread_id];
-        partner = group_thread_id - offset;
-        if (partner >= 0)
+        uint4 sum = s_scan[group_thread_id];
+        if (group_thread_id >= offset)
         {
-            sum += s_scan[partner];
+            sum += s_scan[group_thread_id - offset];
         }
         GroupMemoryBarrierWithGroupSync();
         s_scan[group_thread_id] = sum;
@@ -82,34 +92,31 @@ void RadixSortLocal(int group_thread_id : SV_GroupThreadID, int group_id : SV_Gr
     }
 
     // calculate first index of each 4bit key-value
-    const uint4 temp_total = s_scan[num_elements_per_group_1];
-    uint total[n_way];
-    uint first_index[n_way];
-    uint run_sum = 0;
+    uint4 total = s_scan[num_elements_per_group_1];
+    uint4 first_index = 0u;
+    uint run_sum = 0u;
     [unroll(n_way)]
-    for (int i = 0;; ++i)
+    for (uint i = 0u;; ++i)
     {
-        first_index[i] = run_sum;
-        total[i] = (temp_total[i % 4u] >> ((i / 4u) * 8)) & 0x000000ffu;
-        run_sum += total[i];
+        set_value_in_uint16(first_index, run_sum, i);
+        run_sum += get_value_in_uint16(total, i);
     }
 
     if (group_thread_id < n_way)
     {
         // copy sums of each 4bit key-value to global memory
-        group_sum_buffer[group_thread_id * num_groups + group_id] = total[group_thread_id];
+        group_sum_buffer[group_thread_id * num_groups + group_id] = get_value_in_uint16(total, group_thread_id);
         // copy first index of each 4bit key-value to global memory
-        first_index_buffer[group_thread_id + n_way * group_id] = first_index[group_thread_id];
+        first_index_buffer[group_thread_id + n_way * group_id] = get_value_in_uint16(first_index, group_thread_id);
     }
 
     // sort the input data locally
-    int new_id = first_index[key_4_bit];
-    if (group_thread_id > 0)
+    uint new_id = get_value_in_uint16(first_index, key_4_bit);
+    if (group_thread_id > 0u)
     {
-        new_id += (s_scan[group_thread_id - 1][key_4_bit % 4u] >> ((key_4_bit / 4u) * 8)) & 0x000000ffu;
+        new_id += get_value_in_uint16(s_scan[group_thread_id - 1u], key_4_bit);
     }
     s_data[new_id] = data;
-
     GroupMemoryBarrierWithGroupSync();
 
     // copy sorted input data to global memory
@@ -123,10 +130,10 @@ void RadixSortLocal(int group_thread_id : SV_GroupThreadID, int group_id : SV_Gr
  * \brief copy input data to final position in global memory
  */
 [numthreads(NUM_GROUP_THREADS, 1, 1)]
-void GlobalShuffle(int group_thread_id : SV_GroupThreadID, int group_id : SV_GroupID)
+void GlobalShuffle(uint group_thread_id : SV_GroupThreadID, uint group_id : SV_GroupID)
 {
     group_id += group_offset;
-    int global_id = num_elements_per_group * group_id + group_thread_id;
+    uint global_id = num_elements_per_group * group_id + group_thread_id;
 
     if (group_thread_id < n_way)
     {
@@ -136,15 +143,14 @@ void GlobalShuffle(int group_thread_id : SV_GroupThreadID, int group_id : SV_Gro
         // to make it easier to calculate the final destination of individual data
         s_Pd[group_thread_id] -= first_index_buffer[group_thread_id + n_way * group_id];
     }
-
     GroupMemoryBarrierWithGroupSync();
 
     if (global_id < num_elements)
     {
         DATA_TYPE data = data_in_buffer[global_id];
-        int key_4_bit = ((GET_KEY(data)) >> bit_shift) & n_way_1;
+        uint key_4_bit = ((GET_KEY(data)) >> bit_shift) & n_way_1;
 
-        int new_id = group_thread_id + s_Pd[key_4_bit];
+        uint new_id = group_thread_id + s_Pd[key_4_bit];
 
         // copy data to the final destination
         data_out_buffer[new_id] = data;
