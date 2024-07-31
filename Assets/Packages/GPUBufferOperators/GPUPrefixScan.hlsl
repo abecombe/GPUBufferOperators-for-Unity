@@ -4,8 +4,6 @@
 //#pragma kernel PrefixScan
 //#pragma kernel AddGroupSum
 
-#pragma warning (disable : 3568)
-#pragma multi_compile _ NUM_GROUP_THREADS_128 NUM_GROUP_THREADS_256 NUM_GROUP_THREADS_512
 #if !defined(NUM_GROUP_THREADS_128) && !defined(NUM_GROUP_THREADS_256) && !defined(NUM_GROUP_THREADS_512)
 #define NUM_GROUP_THREADS_128
 #endif

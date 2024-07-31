@@ -34,10 +34,11 @@ public class PrefixScanSample : MonoBehaviour
         for (uint i = 0; i < _numData; i++)
         {
             uint value = (uint)Random.Range(0, (int)_randomValueMax + 1);
+            dataArr1[i] = sum1;
+            dataArr2[i] = value;
             sum1 += value;
-            dataArr1[i] = value;
         }
-        _tempBuffer.SetData(dataArr1);
+        _tempBuffer.SetData(dataArr2);
 
         _copyCs = Resources.Load<ComputeShader>("CopyCS");
         _copyKernel = _copyCs.FindKernel("CopyScanBuffer");
@@ -55,9 +56,9 @@ public class PrefixScanSample : MonoBehaviour
         _prefixScan.Scan(_dataBuffer, out uint sum2);
 
         _dataBuffer.GetData(dataArr2);
-        for (int i = 0; i < _numData - 1; i++)
+        for (int i = 0; i < _numData; i++)
         {
-            if (dataArr2[i + 1] - dataArr2[i] != dataArr1[i])
+            if (dataArr1[i] != dataArr2[i])
             {
                 Debug.LogError("Scanning Failure");
                 break;
