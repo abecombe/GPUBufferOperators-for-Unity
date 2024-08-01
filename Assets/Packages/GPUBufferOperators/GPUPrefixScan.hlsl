@@ -4,7 +4,9 @@
 //#pragma kernel PrefixScan
 //#pragma kernel AddGroupSum
 
+#if !defined(DATA_TYPE)
 #define DATA_TYPE uint
+#endif
 
 #if !defined(NUM_GROUP_THREADS_128) && !defined(NUM_GROUP_THREADS_256) && !defined(NUM_GROUP_THREADS_512)
 #define NUM_GROUP_THREADS_128

@@ -40,6 +40,7 @@ namespace Abecombe.GPUBufferOperators
 
         // Implementation of Article "Chapter 39. Parallel Prefix Sum (Scan) with CUDA"
         // https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda
+        // you can choose from the data types uint, int, or float.
 
         /// <summary>
         /// Prefix scan on dataBuffer
@@ -60,6 +61,17 @@ namespace Abecombe.GPUBufferOperators
             Scan(dataBuffer, null, 0, true, 0);
             totalSum = _totalSum;
         }
+        public void Scan(GraphicsBuffer dataBuffer, out int totalSum)
+        {
+            Scan(dataBuffer, null, 0, true, 0);
+            totalSum = unchecked((int)_totalSum);
+        }
+        public void Scan(GraphicsBuffer dataBuffer, out float totalSum)
+        {
+            Scan(dataBuffer, null, 0, true, 0);
+            totalSum = BitConverter.ToSingle(BitConverter.GetBytes(_totalSum), 0);
+        }
+
 
         /// <summary>
         /// Prefix scan on dataBuffer
