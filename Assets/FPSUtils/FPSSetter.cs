@@ -2,7 +2,7 @@
 
 public class FPSSetter : MonoBehaviour
 {
-    private const int TargetFPS = 3000;
+    private const int TargetFPS = 10000;
 
     [RuntimeInitializeOnLoadMethod]
     private static void SetFPS()
