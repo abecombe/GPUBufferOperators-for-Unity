@@ -55,7 +55,7 @@ namespace Abecombe.GPUBufferOperators
         /// <param name="dataBuffer">data buffer to be shuffled</param>
         /// <param name="key">key for shuffling</param>
         /// <param name="numRounds">number of rounds for shuffling (range: 1 ~ 4)</param>
-        public void Shuffle(GraphicsBuffer dataBuffer, int key, int numRounds = 1)
+        public void Shuffle(GraphicsBuffer dataBuffer, int key, int numRounds = 2)
         {
             Shuffle(dataBuffer, null, key, numRounds);
         }
@@ -67,7 +67,7 @@ namespace Abecombe.GPUBufferOperators
         /// <param name="dataOutBuffer">output shuffled data buffer</param>
         /// <param name="key">key for shuffling</param>
         /// <param name="numRounds">number of rounds for shuffling (range: 1 ~ 4)</param>
-        public void Shuffle(GraphicsBuffer dataInBuffer, GraphicsBuffer dataOutBuffer, int key, int numRounds = 1)
+        public void Shuffle(GraphicsBuffer dataInBuffer, GraphicsBuffer dataOutBuffer, int key, int numRounds = 2)
         {
             if (!_inited) Init();
 
