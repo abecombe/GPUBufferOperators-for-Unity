@@ -1,6 +1,7 @@
 ﻿#pragma kernel CopySortBuffer
 #pragma kernel CopyScanBuffer
 #pragma kernel CopyFilteringBuffer
+#pragma kernel CopyShufflingBuffer
 #pragma kernel CopyCustomSortBuffer
 
 #define NUM_GROUP_THREADS 128
@@ -13,6 +14,9 @@ RWStructuredBuffer<uint> scan_data_buffer;
 
 StructuredBuffer<uint2> filtering_temp_buffer;
 RWStructuredBuffer<uint2> filtering_data_buffer;
+
+StructuredBuffer<uint2> shuffling_temp_buffer;
+RWStructuredBuffer<uint2> shuffling_data_buffer;
 
 struct CustomStruct
 {
@@ -49,6 +53,14 @@ void CopyFilteringBuffer(int thread_id : SV_DispatchThreadID)
     thread_id += group_offset * NUM_GROUP_THREADS;
     if (thread_id < num_elements)
         filtering_data_buffer[thread_id] = filtering_temp_buffer[thread_id];
+}
+
+[numthreads(NUM_GROUP_THREADS, 1, 1)]
+void CopyShufflingBuffer(int thread_id : SV_DispatchThreadID)
+{
+    thread_id += group_offset * NUM_GROUP_THREADS;
+    if (thread_id < num_elements)
+        shuffling_data_buffer[thread_id] = shuffling_temp_buffer[thread_id];
 }
 
 [numthreads(NUM_GROUP_THREADS, 1, 1)]

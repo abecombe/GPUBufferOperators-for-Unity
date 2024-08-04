@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Samples/Scenes/CustomRadixSort.unity
     guid: 6e433997619149349a52198d6544555b
+  - enabled: 0
+    path: Assets/Samples/Scenes/Shuffling.unity
+    guid: 6d48ca7b8e90ae046a46fb291594c369
   m_configObjects: {}

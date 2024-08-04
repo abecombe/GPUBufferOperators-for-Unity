@@ -1,0 +1,10 @@
+﻿#pragma kernel ApplyBijectiveFunction
+#pragma kernel ShuffleElements
+#pragma kernel CopyBuffer
+
+#pragma use_dxc
+// it's necessary to use dxc for using uint64_t in HLSL
+
+#define DATA_TYPE uint2  // input data struct
+
+#include "../GPUShuffling.hlsl"
