@@ -3,6 +3,7 @@ using Abecombe.GPUBufferOperators;
 using System.Runtime.InteropServices;
 using Unity.Mathematics;
 using UnityEngine;
+
 using Random = UnityEngine.Random;
 
 public class ShufflingSample : MonoBehaviour
