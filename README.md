@@ -6,15 +6,7 @@
 
 **The key type used for sorting is limited to `uint`.**
 
-**No restrictions on input data type or size.**
-
-## Algorithmic complexity
-GPURadixSort has **`O(n * s * w)`** complexity  
-```text
-n : number of data
-s : size of data struct
-w : number of bits to sort
-```
+**No restrictions on input data struct or size.**
 
 ## Usage
 ### Init
@@ -27,7 +19,7 @@ GPURadixSort radixSort = new();
 #define DATA_TYPE uint2  // input data struct
 #define GET_KEY(s) s.x   // how to get the key-values used for sorting
 ```
-**`uint2` is an example of a data type & you can change it.**  
+**`uint2` is an example of a data struct & you can change it.**  
 **Note that the larger the data struct size, the longer it takes to sort.**
 
 ### Sort
@@ -48,13 +40,90 @@ void OnDestroy() {
 }
 ```
 
+# GPU Prefix Scan for Unity
+
+**GPU Exclusive Prefix Scan using Compute Shader**
+
+**Based on [Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)**  
+
+**The data struct is limited to `uint`, `int` or `float`.**
+
+**No restrictions on input data size.**
+
+## Usage
+### Init
+***C# code***
+```csharp
+GPUPrefixScan prefixScan = new();
+```
+***PrefixScanCS.compute***
+```text
+#define DATA_TYPE uint
+// you can choose from the data types uint, int, or float.
+```
+
+### Scan
+```csharp
+prefixScan.Scan(GraphicsBuffer DataBuffer, out uint TotalSum);
+```
+* **DataBuffer**  
+  * data buffer to be scanned
+
+* **TotalSum**  
+  * the total sum of values
+
+### Dispose
+```csharp
+void OnDestroy() {
+  prefixScan.Dispose();
+}
+```
+
+# GPU Shuffling for Unity
+
+**GPU Shuffling using Compute Shader**
+
+**Based on [Bandwidth-Optimal Random Shuffling for GPUs](https://arxiv.org/pdf/2106.06161)** 
+
+**No restrictions on input data struct or size.**
+
+## Usage
+### Init
+***C# code***
+```csharp
+GPUShuffling shuffling = new();
+```
+***ShufflingCS.compute***
+```text
+#define DATA_TYPE uint2  // input data struct
+```
+**`uint2` is an example of a data struct & you can change it.**  
+**Note that the larger the data struct size, the longer it takes to shuffle.**
+
+### Shuffle
+```csharp
+shuffling.Shuffle(GraphicsBuffer DataBuffer, int Key);
+```
+* **DataBuffer**  
+  * data buffer to be shuffled
+
+* **Key**  
+  * key for shuffling
+
+### Dispose
+```csharp
+void OnDestroy() {
+  shuffling.Dispose();
+}
+```
+
 # GPU Filtering for Unity
 
 **GPU Filtering using Compute Shader**
 
 **Filtering: Gather elements that meet certain condition to the front of the buffer**
 
-**No restrictions on input data type or size.**
+**No restrictions on input data struct or size.**
 
 ## Usage
 ### Init
@@ -67,17 +136,17 @@ GPUFiltering filtering = new();
 #define DATA_TYPE uint2        // input data struct
 #define GET_KEY(s) (s.x == 1)  // certain condition used for filtering
 ```
-**`uint2` is an example of a data type & you can change it.**  
+**`uint2` is an example of a data struct & you can change it.**  
 **Note that the larger the data struct size, the longer it takes to filter.**
 
 ### Filter
 ```csharp
-filtering.Filter(GraphicsBuffer DataBuffer, out uint numFilteredElements);
+filtering.Filter(GraphicsBuffer DataBuffer, out uint NumFilteredElements);
 ```
 * **DataBuffer**  
   * data buffer to be filtered
 
-* **numFilteredElements**  
+* **NumFilteredElements**  
   * the number of filtered elements
 
 ### Dispose
@@ -91,3 +160,4 @@ void OnDestroy() {
 * **[Fast 4-way parallel radix sorting on GPUs](http://www.sci.utah.edu/publications/Ha2009b/Ha_CGF2009.pdf)**  
 * **[Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)**  
 * **[GPU Radix Sort](https://github.com/mark-poscablo/gpu-radix-sort)**
+* **[Bandwidth-Optimal Random Shuffling for GPUs](https://arxiv.org/pdf/2106.06161)**  
