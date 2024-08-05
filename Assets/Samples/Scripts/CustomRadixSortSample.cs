@@ -4,6 +4,10 @@ using Abecombe.GPUBufferOperators;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 using Random = UnityEngine.Random;
 
 public struct CustomStruct
@@ -53,14 +57,12 @@ public class CustomRadixSortSample : MonoBehaviour
         _tempBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, _numData, Marshal.SizeOf(typeof(CustomStruct)));
 
         CustomStruct[] dataArr = new CustomStruct[_numData];
-        List<CustomStruct> dataList = new List<CustomStruct>();
 
         Random.InitState(_randomSeed);
         for (uint i = 0; i < _numData; i++)
         {
             float value = Random.Range(-10000f, 10000f);
             dataArr[i] = new CustomStruct(value, i, 10f, 20f);
-            dataList.Add(new CustomStruct(value, i, 10f, 20f));
         }
         _tempBuffer.SetData(dataArr);
 
@@ -70,25 +72,6 @@ public class CustomRadixSortSample : MonoBehaviour
         _copyCs.SetBuffer(_copyKernel, "custom_sort_data_buffer", _dataBuffer);
         _copyCs.SetBuffer(_copyKernel, "custom_sort_temp_buffer", _tempBuffer);
         _copyCs.SetInt("num_elements", _numData);
-
-        for (int i = 0; i < DispatchSize; i += MaxDispatchSize)
-        {
-            _copyCs.SetInt("group_offset", i);
-            _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
-        }
-
-        _radixSort.Sort(_dataBuffer, GPURadixSort.KeyType.Float);
-
-        dataList = dataList.OrderBy(data => data.Key).ToList();
-        _dataBuffer.GetData(dataArr);
-        for (int i = 0; i < _numData - 1; i++)
-        {
-            if (dataArr[i].Key != dataList[i].Key || dataArr[i].ID != dataList[i].ID || dataArr[i].Dummy1 != dataList[i].Dummy1 || dataArr[i].Dummy2 != dataList[i].Dummy2)
-            {
-                Debug.LogError("Sorting Failure");
-                break;
-            }
-        }
     }
 
     private void Update()
@@ -109,4 +92,53 @@ public class CustomRadixSortSample : MonoBehaviour
         _dataBuffer?.Release();
         _tempBuffer?.Release();
     }
+
+    public void CheckSuccess()
+    {
+        Start();
+
+        for (int i = 0; i < DispatchSize; i += MaxDispatchSize)
+        {
+            _copyCs.SetInt("group_offset", i);
+            _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
+        }
+
+        CustomStruct[] dataArr1 = new CustomStruct[_numData];
+        _dataBuffer.GetData(dataArr1);
+
+        _radixSort.Sort(_dataBuffer, GPURadixSort.KeyType.Float);
+
+        dataArr1 = dataArr1.OrderBy(data => data.Key).ToArray();
+
+        CustomStruct[] dataArr2 = new CustomStruct[_numData];
+        _dataBuffer.GetData(dataArr2);
+
+        if (dataArr1.SequenceEqual(dataArr2))
+        {
+            Debug.Log("Sorting Success");
+        }
+        else
+        {
+            Debug.LogError("Sorting Failure");
+        }
+
+        OnDestroy();
+    }
 }
+
+#if UNITY_EDITOR
+[CustomEditor(typeof(CustomRadixSortSample))]
+public class CustomRadixSortSampleEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+        GUILayout.Space(5f);
+        if (GUILayout.Button("Check Success"))
+        {
+            var customRadixSortSample = target as CustomRadixSortSample;
+            customRadixSortSample.CheckSuccess();
+        }
+    }
+}
+#endif
