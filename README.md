@@ -4,7 +4,7 @@
 
 **Based on [Fast 4-way parallel radix sorting on GPUs](http://www.sci.utah.edu/publications/Ha2009b/Ha_CGF2009.pdf)**
 
-**The key type used for sorting is limited to `uint`.**
+**The key type used for sorting is limited to `uint`, `int` or `float`.**
 
 **No restrictions on input data struct or size.**
 
@@ -24,13 +24,16 @@ GPURadixSort radixSort = new();
 
 ### Sort
 ```csharp
-radixSort.Sort(GraphicsBuffer DataBuffer, uint MaxValue = uint.MaxValue);
+radixSort.Sort(GraphicsBuffer DataBuffer, KeyType KeyType, uint MaxValue = uint.MaxValue);
 ```
-* **DataBuffer**  
+* **DataBuffer**
   * data buffer to be sorted
 
-* **MaxValue**  
-  * maximum key-value  
+* **KeyType**
+  * sorting key type (uint, int or float)
+
+* **MaxValue**
+  * maximum key-value (valid only when KeyType is UInt)
   * **since this variable directly related to the algorithmic complexity, passing this argument will reduce the cost of sorting.**
 
 ### Dispose
@@ -44,7 +47,7 @@ void OnDestroy() {
 
 **GPU Exclusive Prefix Scan using Compute Shader**
 
-**Based on [Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)**  
+**Based on [Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)**
 
 **The data struct is limited to `uint`, `int` or `float`.**
 
@@ -66,10 +69,10 @@ GPUPrefixScan prefixScan = new();
 ```csharp
 prefixScan.Scan(GraphicsBuffer DataBuffer, out uint TotalSum);
 ```
-* **DataBuffer**  
+* **DataBuffer**
   * data buffer to be scanned
 
-* **TotalSum**  
+* **TotalSum**
   * the total sum of values
 
 ### Dispose
@@ -83,7 +86,7 @@ void OnDestroy() {
 
 **GPU Shuffling using Compute Shader**
 
-**Based on [Bandwidth-Optimal Random Shuffling for GPUs](https://arxiv.org/pdf/2106.06161)** 
+**Based on [Bandwidth-Optimal Random Shuffling for GPUs](https://arxiv.org/pdf/2106.06161)**
 
 **No restrictions on input data struct or size.**
 
@@ -104,10 +107,10 @@ GPUShuffling shuffling = new();
 ```csharp
 shuffling.Shuffle(GraphicsBuffer DataBuffer, int Key);
 ```
-* **DataBuffer**  
+* **DataBuffer**
   * data buffer to be shuffled
 
-* **Key**  
+* **Key**
   * key for shuffling
 
 ### Dispose
@@ -143,10 +146,10 @@ GPUFiltering filtering = new();
 ```csharp
 filtering.Filter(GraphicsBuffer DataBuffer, out uint NumFilteredElements);
 ```
-* **DataBuffer**  
+* **DataBuffer**
   * data buffer to be filtered
 
-* **NumFilteredElements**  
+* **NumFilteredElements**
   * the number of filtered elements
 
 ### Dispose
@@ -157,7 +160,7 @@ void OnDestroy() {
 ```
 
 # References
-* **[Fast 4-way parallel radix sorting on GPUs](http://www.sci.utah.edu/publications/Ha2009b/Ha_CGF2009.pdf)**  
-* **[Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)**  
+* **[Fast 4-way parallel radix sorting on GPUs](http://www.sci.utah.edu/publications/Ha2009b/Ha_CGF2009.pdf)**
+* **[Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)**
 * **[GPU Radix Sort](https://github.com/mark-poscablo/gpu-radix-sort)**
 * **[Bandwidth-Optimal Random Shuffling for GPUs](https://arxiv.org/pdf/2106.06161)**  

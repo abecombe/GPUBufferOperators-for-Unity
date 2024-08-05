@@ -65,8 +65,8 @@ namespace Abecombe.GPUBufferOperators
         /// Sort data buffer in ascending order
         /// </summary>
         /// <param name="dataBuffer">data buffer to be sorted</param>
-        /// <param name="keyType">key type</param>
-        /// <param name="maxValue">maximum key-value (keyType: UInt only)</param>
+        /// <param name="keyType">sorting key type (uint, int or float)</param>
+        /// <param name="maxValue">maximum key-value (valid only when keyType is UInt)</param>
         public void Sort(GraphicsBuffer dataBuffer, KeyType keyType, uint maxValue = uint.MaxValue)
         {
             if (!_inited) Init();
