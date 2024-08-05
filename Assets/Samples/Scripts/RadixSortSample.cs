@@ -55,7 +55,7 @@ public class RadixSortSample : MonoBehaviour
             _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
         }
 
-        _radixSort.Sort(_dataBuffer, _randomValueMax);
+        _radixSort.Sort(_dataBuffer, GPURadixSort.KeyType.UInt, _randomValueMax);
 
         dataList = dataList.OrderBy(data => data.x).ToList();
         _dataBuffer.GetData(dataArr);
@@ -77,7 +77,7 @@ public class RadixSortSample : MonoBehaviour
             _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
         }
 
-        _radixSort.Sort(_dataBuffer, _randomValueMax);
+        _radixSort.Sort(_dataBuffer, GPURadixSort.KeyType.UInt, _randomValueMax);
     }
 
     private void OnDestroy()

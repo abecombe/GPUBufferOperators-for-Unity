@@ -8,12 +8,12 @@ using Random = UnityEngine.Random;
 
 public struct CustomStruct
 {
-    public uint Key { get; }
+    public float Key { get; }
     public uint ID { get; }
     public float Dummy1 { get; }
     public float Dummy2 { get; }
 
-    public CustomStruct(uint key, uint id, float dummy1, float dummy2)
+    public CustomStruct(float key, uint id, float dummy1, float dummy2)
     {
         Key = key;
         ID = id;
@@ -33,7 +33,6 @@ public class CustomRadixSort : GPURadixSort
 public class CustomRadixSortSample : MonoBehaviour
 {
     [SerializeField] private int _numData = 100;
-    [SerializeField] private uint _randomValueMax = 100;
     [SerializeField] private int _randomSeed = 0;
 
     private CustomRadixSort _radixSort = new();
@@ -59,7 +58,7 @@ public class CustomRadixSortSample : MonoBehaviour
         Random.InitState(_randomSeed);
         for (uint i = 0; i < _numData; i++)
         {
-            uint value = (uint)Random.Range(0, (int)_randomValueMax + 1);
+            float value = Random.Range(-10000f, 10000f);
             dataArr[i] = new CustomStruct(value, i, 10f, 20f);
             dataList.Add(new CustomStruct(value, i, 10f, 20f));
         }
@@ -78,7 +77,7 @@ public class CustomRadixSortSample : MonoBehaviour
             _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
         }
 
-        _radixSort.Sort(_dataBuffer, _randomValueMax);
+        _radixSort.Sort(_dataBuffer, GPURadixSort.KeyType.Float);
 
         dataList = dataList.OrderBy(data => data.Key).ToList();
         _dataBuffer.GetData(dataArr);
@@ -100,7 +99,7 @@ public class CustomRadixSortSample : MonoBehaviour
             _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
         }
 
-        _radixSort.Sort(_dataBuffer, _randomValueMax);
+        _radixSort.Sort(_dataBuffer, GPURadixSort.KeyType.Float);
     }
 
     private void OnDestroy()

@@ -3,7 +3,7 @@
 
 struct CustomStruct
 {
-    uint key;
+    float key;
     uint id;
     float dummy1;
     float dummy2;

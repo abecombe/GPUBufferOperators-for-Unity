@@ -5,6 +5,13 @@ namespace Abecombe.GPUBufferOperators
 {
     public class GPURadixSort : IDisposable
     {
+        public enum KeyType
+        {
+            UInt = 0,
+            Int,
+            Float
+        }
+
         // we use 16-way radix sort
         private const int NWay = 16;
 
@@ -58,8 +65,9 @@ namespace Abecombe.GPUBufferOperators
         /// Sort data buffer in ascending order
         /// </summary>
         /// <param name="dataBuffer">data buffer to be sorted</param>
-        /// <param name="maxValue">maximum key-value</param>
-        public void Sort(GraphicsBuffer dataBuffer, uint maxValue = uint.MaxValue)
+        /// <param name="keyType">key type</param>
+        /// <param name="maxValue">maximum key-value (keyType: UInt only)</param>
+        public void Sort(GraphicsBuffer dataBuffer, KeyType keyType, uint maxValue = uint.MaxValue)
         {
             if (!_inited) Init();
 
@@ -74,6 +82,7 @@ namespace Abecombe.GPUBufferOperators
 
             cs.SetInt("num_elements", numElements);
             cs.SetInt("num_groups", numGroups);
+            cs.SetInt("key_type", (int)keyType);
 
             cs.SetBuffer(k_local, "data_in_buffer", dataBuffer);
             cs.SetBuffer(k_local, "data_out_buffer", _tempBuffer);
@@ -85,7 +94,7 @@ namespace Abecombe.GPUBufferOperators
             cs.SetBuffer(k_shuffle, "first_index_buffer", _firstIndexBuffer);
             cs.SetBuffer(k_shuffle, "global_prefix_sum_buffer", _groupSumBuffer);
 
-            int firstBitHigh = Convert.ToString(maxValue, 2).Length;
+            int firstBitHigh = keyType == KeyType.UInt ? Convert.ToString(maxValue, 2).Length : 32;
             for (int bitShift = 0; bitShift < firstBitHigh; bitShift += Convert.ToString(NWay, 2).Length - 1)
             {
                 cs.SetInt("bit_shift", bitShift);
