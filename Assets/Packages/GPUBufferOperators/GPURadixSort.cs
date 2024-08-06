@@ -12,6 +12,12 @@ namespace Abecombe.GPUBufferOperators
             Float
         }
 
+        public enum SortingOrder
+        {
+            Ascending = 0,
+            Descending
+        }
+
         // we use 16-way radix sort
         private const int NWay = 16;
 
@@ -56,11 +62,6 @@ namespace Abecombe.GPUBufferOperators
         // https://vgc.poly.edu/~csilva/papers/cgf.pdf
         // (we use 16-way radix sort)
 
-        // GPURadixSort has O(n * s * w) complexity
-        // n : number of data
-        // s : size of data struct
-        // w : number of bits to sort
-
         /// <summary>
         /// Sort data buffer in ascending order
         /// </summary>
@@ -68,6 +69,29 @@ namespace Abecombe.GPUBufferOperators
         /// <param name="keyType">sorting key type (uint, int or float)</param>
         /// <param name="maxValue">maximum key-value (valid only when keyType is UInt)</param>
         public void Sort(GraphicsBuffer dataBuffer, KeyType keyType, uint maxValue = uint.MaxValue)
+        {
+            Sort(dataBuffer, SortingOrder.Ascending, keyType, maxValue);
+        }
+
+        /// <summary>
+        /// Sort data buffer in descending order
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be sorted</param>
+        /// <param name="keyType">sorting key type (uint, int or float)</param>
+        /// <param name="maxValue">maximum key-value (valid only when keyType is UInt)</param>
+        public void SortDescending(GraphicsBuffer dataBuffer, KeyType keyType, uint maxValue = uint.MaxValue)
+        {
+            Sort(dataBuffer, SortingOrder.Descending, keyType, maxValue);
+        }
+
+        /// <summary>
+        /// Sort data buffer in specified order
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be sorted</param>
+        /// <param name="sortingOrder"> sorting order (ascending or descending)</param>
+        /// <param name="keyType">sorting key type (uint, int or float)</param>
+        /// <param name="maxValue">maximum key-value (valid only when keyType is UInt)</param>
+        public void Sort(GraphicsBuffer dataBuffer, SortingOrder sortingOrder, KeyType keyType, uint maxValue = uint.MaxValue)
         {
             if (!_inited) Init();
 
@@ -83,6 +107,7 @@ namespace Abecombe.GPUBufferOperators
             cs.SetInt("num_elements", numElements);
             cs.SetInt("num_groups", numGroups);
             cs.SetInt("key_type", (int)keyType);
+            cs.SetInt("sorting_order", (int)sortingOrder);
 
             cs.SetBuffer(k_local, "data_in_buffer", dataBuffer);
             cs.SetBuffer(k_local, "data_out_buffer", _tempBuffer);

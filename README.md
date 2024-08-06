@@ -24,10 +24,13 @@ GPURadixSort radixSort = new();
 
 ### Sort
 ```csharp
-radixSort.Sort(GraphicsBuffer DataBuffer, KeyType KeyType, uint MaxValue = uint.MaxValue);
+radixSort.Sort(GraphicsBuffer DataBuffer, SortingOrder SortingOrder, KeyType KeyType, uint MaxValue = uint.MaxValue);
 ```
 * **DataBuffer**
   * data buffer to be sorted
+
+* **SortingOrder**
+  * sorting order (ascending or descending)
 
 * **KeyType**
   * sorting key type (uint, int or float)

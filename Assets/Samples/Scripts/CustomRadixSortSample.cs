@@ -82,7 +82,7 @@ public class CustomRadixSortSample : MonoBehaviour
             _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
         }
 
-        _radixSort.Sort(_dataBuffer, GPURadixSort.KeyType.Float);
+        _radixSort.SortDescending(_dataBuffer, GPURadixSort.KeyType.Float);
     }
 
     private void OnDestroy()
@@ -106,9 +106,9 @@ public class CustomRadixSortSample : MonoBehaviour
         CustomStruct[] dataArr1 = new CustomStruct[_numData];
         _dataBuffer.GetData(dataArr1);
 
-        _radixSort.Sort(_dataBuffer, GPURadixSort.KeyType.Float);
+        _radixSort.SortDescending(_dataBuffer, GPURadixSort.KeyType.Float);
 
-        dataArr1 = dataArr1.OrderBy(data => data.Key).ToArray();
+        dataArr1 = dataArr1.OrderByDescending(data => data.Key).ToArray();
 
         CustomStruct[] dataArr2 = new CustomStruct[_numData];
         _dataBuffer.GetData(dataArr2);

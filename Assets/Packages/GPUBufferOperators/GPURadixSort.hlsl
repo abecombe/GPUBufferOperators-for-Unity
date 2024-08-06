@@ -26,6 +26,7 @@ uint num_groups;
 uint group_offset;
 uint bit_shift;
 uint key_type;
+uint sorting_order;
 
 static const uint num_elements_per_group = NUM_GROUP_THREADS;
 static const uint log_num_elements_per_group = log2(num_elements_per_group);
@@ -51,19 +52,29 @@ inline uint int_to_uint_for_sorting(int i)
 {
     return asuint(i ^ 0x80000000);
 }
-inline uint get_key(DATA_TYPE data)
+inline uint get_key_4_bit(DATA_TYPE data)
 {
+    uint key;
     switch (key_type)
     {
-        case 0: // UInt
-            return GET_KEY(data);
-        case 1: // Int
-            return int_to_uint_for_sorting(GET_KEY(data));
-        case 2: // Float
-            return float_to_uint_for_sorting(GET_KEY(data));
+        case 0: // uint
+            key = GET_KEY(data);
+            break;
+        case 1: // int
+            key = int_to_uint_for_sorting(GET_KEY(data));
+            break;
+        case 2: // float
+            key = float_to_uint_for_sorting(GET_KEY(data));
+            break;
         default:
-            return GET_KEY(data);
+            key = GET_KEY(data);
+            break;
     }
+    if (sorting_order == 1) // descending
+    {
+        key = ~key;
+    }
+    return (key >> bit_shift) & n_way_1;
 }
 
 inline uint get_value_in_uint16(uint4 uint16_value, uint key)
@@ -94,7 +105,7 @@ void RadixSortLocal(uint group_thread_id : SV_GroupThreadID, uint group_id : SV_
     if (global_id < num_elements)
     {
         data = data_in_buffer[global_id];
-        key_4_bit = (get_key(data) >> bit_shift) & n_way_1;
+        key_4_bit = get_key_4_bit(data);
     }
 
     // build scan data
@@ -172,7 +183,7 @@ void GlobalShuffle(uint group_thread_id : SV_GroupThreadID, uint group_id : SV_G
     if (global_id < num_elements)
     {
         DATA_TYPE data = data_in_buffer[global_id];
-        uint key_4_bit = (get_key(data) >> bit_shift) & n_way_1;
+        uint key_4_bit = get_key_4_bit(data);
 
         uint new_id = group_thread_id + s_Pd[key_4_bit];
 
