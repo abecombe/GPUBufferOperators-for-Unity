@@ -26,7 +26,7 @@ uint group_offset;
 
 static const uint num_elements_per_group = NUM_GROUP_THREADS;
 static const uint log_num_elements_per_group = log2(num_elements_per_group);
-static const uint num_elements_per_group_1 = num_elements_per_group - 1u;
+static const uint num_elements_per_group_minus_1 = num_elements_per_group - 1u;
 
 static const uint s_data_len = num_elements_per_group;
 static const uint s_scan_len = num_elements_per_group;
@@ -70,7 +70,7 @@ void RadixSortLocal(uint group_thread_id : SV_GroupThreadID, uint group_id : SV_
         GroupMemoryBarrierWithGroupSync();
     }
 
-    uint total = s_scan[num_elements_per_group_1];
+    uint total = s_scan[num_elements_per_group_minus_1];
 
     if (group_thread_id == 0u)
     {

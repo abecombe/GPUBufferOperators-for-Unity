@@ -111,11 +111,11 @@ namespace Abecombe.GPUBufferOperators
 
             // prefix scan global group sum data
             if (numBuffer is not null)
-                _prefixScan.Scan(_globalPrefixSumBuffer, numBuffer, bufferOffset);
+                _prefixScan.ExclusiveScan(_globalPrefixSumBuffer, numBuffer, bufferOffset);
             else if (returnNumFilteredElements)
-                _prefixScan.Scan(_globalPrefixSumBuffer, out _numFilteredElements);
+                _prefixScan.ExclusiveScan(_globalPrefixSumBuffer, out _numFilteredElements);
             else
-                _prefixScan.Scan(_globalPrefixSumBuffer);
+                _prefixScan.ExclusiveScan(_globalPrefixSumBuffer);
 
             // copy input data to final position in global memory
             cs.SetBuffer(k_shuffle, "data_in_buffer", _tempBuffer);

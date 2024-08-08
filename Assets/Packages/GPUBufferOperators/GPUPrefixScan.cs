@@ -6,6 +6,12 @@ namespace Abecombe.GPUBufferOperators
 {
     public class GPUPrefixScan : IDisposable
     {
+        public enum ScanType
+        {
+            Inclusive = 0,
+            Exclusive
+        }
+
         private const int MaxDispatchSize = 65535;
 
         protected ComputeShader PrefixScanCs;
@@ -45,30 +51,88 @@ namespace Abecombe.GPUBufferOperators
         /// <summary>
         /// Prefix scan on dataBuffer
         /// </summary>
+        /// <param name="scanType">inclusive or exclusive scan</param>
         /// <param name="dataBuffer">data buffer to be scanned</param>
-        public void Scan(GraphicsBuffer dataBuffer)
+        public void Scan(ScanType scanType, GraphicsBuffer dataBuffer)
         {
-            Scan(dataBuffer, null, 0, false, 0);
+            Scan(scanType, dataBuffer, null, 0, false, 0);
+        }
+        /// <summary>
+        /// Inclusive Prefix scan on dataBuffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be scanned</param>
+        public void InclusiveScan(GraphicsBuffer dataBuffer)
+        {
+            Scan(ScanType.Inclusive, dataBuffer, null, 0, false, 0);
+        }
+        /// <summary>
+        /// Exclusive Prefix scan on dataBuffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be scanned</param>
+        public void ExclusiveScan(GraphicsBuffer dataBuffer)
+        {
+            Scan(ScanType.Exclusive, dataBuffer, null, 0, false, 0);
         }
 
         /// <summary>
         /// Prefix scan on dataBuffer
         /// </summary>
+        /// <param name="scanType">inclusive or exclusive scan</param>
         /// <param name="dataBuffer">data buffer to be scanned</param>
         /// <param name="totalSum">the total sum of values</param>
-        public void Scan(GraphicsBuffer dataBuffer, out uint totalSum)
+        public void Scan(ScanType scanType, GraphicsBuffer dataBuffer, out uint totalSum)
         {
-            Scan(dataBuffer, null, 0, true, 0);
+            Scan(scanType, dataBuffer, null, 0, true, 0);
             totalSum = _totalSum;
         }
-        public void Scan(GraphicsBuffer dataBuffer, out int totalSum)
+        public void Scan(ScanType scanType, GraphicsBuffer dataBuffer, out int totalSum)
         {
-            Scan(dataBuffer, null, 0, true, 0);
+            Scan(scanType, dataBuffer, null, 0, true, 0);
             totalSum = unchecked((int)_totalSum);
         }
-        public void Scan(GraphicsBuffer dataBuffer, out float totalSum)
+        public void Scan(ScanType scanType, GraphicsBuffer dataBuffer, out float totalSum)
         {
-            Scan(dataBuffer, null, 0, true, 0);
+            Scan(scanType, dataBuffer, null, 0, true, 0);
+            totalSum = BitConverter.ToSingle(BitConverter.GetBytes(_totalSum), 0);
+        }
+        /// <summary>
+        /// Inclusive Prefix scan on dataBuffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be scanned</param>
+        /// <param name="totalSum">the total sum of values</param>
+        public void InclusiveScan(GraphicsBuffer dataBuffer, out uint totalSum)
+        {
+            Scan(ScanType.Inclusive, dataBuffer, null, 0, true, 0);
+            totalSum = _totalSum;
+        }
+        public void InclusiveScan(GraphicsBuffer dataBuffer, out int totalSum)
+        {
+            Scan(ScanType.Inclusive, dataBuffer, null, 0, true, 0);
+            totalSum = unchecked((int)_totalSum);
+        }
+        public void InclusiveScan(GraphicsBuffer dataBuffer, out float totalSum)
+        {
+            Scan(ScanType.Inclusive, dataBuffer, null, 0, true, 0);
+            totalSum = BitConverter.ToSingle(BitConverter.GetBytes(_totalSum), 0);
+        }
+        /// <summary>
+        /// Exclusive Prefix scan on dataBuffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be scanned</param>
+        /// <param name="totalSum">the total sum of values</param>
+        public void ExclusiveScan(GraphicsBuffer dataBuffer, out uint totalSum)
+        {
+            Scan(ScanType.Exclusive, dataBuffer, null, 0, true, 0);
+            totalSum = _totalSum;
+        }
+        public void ExclusiveScan(GraphicsBuffer dataBuffer, out int totalSum)
+        {
+            Scan(ScanType.Exclusive, dataBuffer, null, 0, true, 0);
+            totalSum = unchecked((int)_totalSum);
+        }
+        public void ExclusiveScan(GraphicsBuffer dataBuffer, out float totalSum)
+        {
+            Scan(ScanType.Exclusive, dataBuffer, null, 0, true, 0);
             totalSum = BitConverter.ToSingle(BitConverter.GetBytes(_totalSum), 0);
         }
 
@@ -76,15 +140,36 @@ namespace Abecombe.GPUBufferOperators
         /// <summary>
         /// Prefix scan on dataBuffer
         /// </summary>
+        /// <param name="scanType">inclusive or exclusive scan</param>
         /// <param name="dataBuffer">data buffer to be scanned</param>
         /// <param name="totalSumBuffer">data buffer to store the total sum</param>
         /// <param name="bufferOffset">index of the element in the totalSumBuffer to store the total sum</param>
-        public void Scan(GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset = 0)
+        public void Scan(ScanType scanType, GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset = 0)
         {
-            Scan(dataBuffer, totalSumBuffer, bufferOffset, false, 0);
+            Scan(scanType, dataBuffer, totalSumBuffer, bufferOffset, false, 0);
+        }
+        /// <summary>
+        /// Inclusive Prefix scan on dataBuffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be scanned</param>
+        /// <param name="totalSumBuffer">data buffer to store the total sum</param>
+        /// <param name="bufferOffset">index of the element in the totalSumBuffer to store the total sum</param>
+        public void InclusiveScan(GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset = 0)
+        {
+            Scan(ScanType.Inclusive, dataBuffer, totalSumBuffer, bufferOffset, false, 0);
+        }
+        /// <summary>
+        /// Exclusive Prefix scan on dataBuffer
+        /// </summary>
+        /// <param name="dataBuffer">data buffer to be scanned</param>
+        /// <param name="totalSumBuffer">data buffer to store the total sum</param>
+        /// <param name="bufferOffset">index of the element in the totalSumBuffer to store the total sum</param>
+        public void ExclusiveScan(GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset = 0)
+        {
+            Scan(ScanType.Exclusive, dataBuffer, totalSumBuffer, bufferOffset, false, 0);
         }
 
-        private void Scan(GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset, bool returnTotalSum, int bufferIndex)
+        private void Scan(ScanType scanType, GraphicsBuffer dataBuffer, GraphicsBuffer totalSumBuffer, uint bufferOffset, bool returnTotalSum, int recursiveDepth)
         {
             if (!_inited) Init();
 
@@ -104,19 +189,19 @@ namespace Abecombe.GPUBufferOperators
 
             _groupSumBufferList ??= new List<GraphicsBuffer>();
             GraphicsBuffer groupSumBuffer;
-            if (_groupSumBufferList.Count == bufferIndex)
+            if (_groupSumBufferList.Count == recursiveDepth)
             {
                 groupSumBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, numGroups, sizeof(uint));
                 _groupSumBufferList.Add(groupSumBuffer);
             }
-            else if (_groupSumBufferList.Count > bufferIndex)
+            else if (_groupSumBufferList.Count > recursiveDepth)
             {
-                groupSumBuffer = _groupSumBufferList[bufferIndex];
+                groupSumBuffer = _groupSumBufferList[recursiveDepth];
                 if (groupSumBuffer.count != numGroups)
                 {
                     groupSumBuffer.Release();
                     groupSumBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, numGroups, sizeof(uint));
-                    _groupSumBufferList[bufferIndex] = groupSumBuffer;
+                    _groupSumBufferList[recursiveDepth] = groupSumBuffer;
                 }
             }
             else
@@ -127,6 +212,7 @@ namespace Abecombe.GPUBufferOperators
 
             // scan input data locally and output total sums within groups
             cs.SetInt("num_elements", numElements);
+            cs.SetInt("is_inclusive_scan", scanType == ScanType.Inclusive && recursiveDepth == 0 ? 1 : 0);
             cs.SetBuffer(k_scan, "data_buffer", dataBuffer);
             cs.SetBuffer(k_scan, "group_sum_buffer", groupSumBuffer);
             cs.SetInt("group_sum_offset", 0);
@@ -140,6 +226,7 @@ namespace Abecombe.GPUBufferOperators
             if (numGroups <= numElementsPerGroup)
             {
                 cs.SetInt("num_elements", numGroups);
+                cs.SetInt("is_inclusive_scan", 0);
                 cs.SetInt("group_offset", 0);
                 cs.SetBuffer(k_scan, "data_buffer", groupSumBuffer);
                 cs.SetBuffer(k_scan, "group_sum_buffer", totalSumBuffer);
@@ -155,7 +242,7 @@ namespace Abecombe.GPUBufferOperators
             // execute this function recursively
             else
             {
-                Scan(groupSumBuffer, totalSumBuffer, bufferOffset, returnTotalSum, bufferIndex + 1);
+                Scan(scanType, groupSumBuffer, totalSumBuffer, bufferOffset, returnTotalSum, recursiveDepth + 1);
             }
 
             // add each group's total sum to its scan output

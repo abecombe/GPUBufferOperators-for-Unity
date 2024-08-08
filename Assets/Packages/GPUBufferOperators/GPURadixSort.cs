@@ -132,7 +132,7 @@ namespace Abecombe.GPUBufferOperators
                 }
 
                 // prefix scan global group sum data
-                _prefixScan.Scan(_groupSumBuffer);
+                _prefixScan.ExclusiveScan(_groupSumBuffer);
 
                 // copy input data to final position in global memory
                 for (int i = 0; i < numGroups; i += MaxDispatchSize)

@@ -169,6 +169,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _numData: 1000000
   _randomValueMax: 500000
+  _scanType: 1
   _randomSeed: 0
 --- !u!1 &754477575
 GameObject:

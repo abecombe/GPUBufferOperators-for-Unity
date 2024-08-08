@@ -12,6 +12,7 @@ public class PrefixScanSample : MonoBehaviour
 {
     [SerializeField] private int _numData = 100;
     [SerializeField] private uint _randomValueMax = 100;
+    [SerializeField] private GPUPrefixScan.ScanType _scanType = GPUPrefixScan.ScanType.Inclusive;
     [SerializeField] private int _randomSeed = 0;
 
     private GPUPrefixScan _prefixScan = new();
@@ -57,7 +58,7 @@ public class PrefixScanSample : MonoBehaviour
             _copyCs.Dispatch(_copyKernel, Mathf.Min(DispatchSize - i, MaxDispatchSize), 1, 1);
         }
 
-        _prefixScan.Scan(_dataBuffer);
+        _prefixScan.Scan(_scanType, _dataBuffer);
     }
 
     private void OnDestroy()
@@ -86,11 +87,21 @@ public class PrefixScanSample : MonoBehaviour
         uint sum1 = 0;
         for (uint i = 0; i < _numData; i++)
         {
-            scanDataArr[i] = sum1;
-            sum1 += dataArr1[i];
+            switch (_scanType)
+            {
+                case GPUPrefixScan.ScanType.Inclusive:
+                    sum1 += dataArr1[i];
+                    scanDataArr[i] = sum1;
+                    break;
+                case GPUPrefixScan.ScanType.Exclusive:
+                default:
+                    scanDataArr[i] = sum1;
+                    sum1 += dataArr1[i];
+                    break;
+            }
         }
 
-        _prefixScan.Scan(_dataBuffer, out uint sum2);
+        _prefixScan.Scan(_scanType, _dataBuffer, out uint sum2);
 
         uint[] dataArr2 = new uint[_numData];
         _dataBuffer.GetData(dataArr2);

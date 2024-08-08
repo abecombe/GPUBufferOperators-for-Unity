@@ -32,14 +32,16 @@ RWStructuredBuffer<DATA_TYPE> group_sum_buffer;
 uint num_elements;
 uint group_offset;
 uint group_sum_offset;
+bool is_inclusive_scan;
 
 static const uint num_group_threads = NUM_GROUP_THREADS;
 static const uint num_elements_per_group = 2u * NUM_GROUP_THREADS;
-static const uint num_elements_per_group_1 = num_elements_per_group - 1u;
+static const uint num_elements_per_group_minus_1 = num_elements_per_group - 1u;
+static const uint sma_num_elements_per_group = SHARED_MEMORY_ADDRESS(num_elements_per_group);
+static const uint sma_num_elements_per_group_minus_1 = SHARED_MEMORY_ADDRESS(num_elements_per_group_minus_1);
 static const uint log_num_elements_per_group = log2(num_elements_per_group);
-static const uint sma_num_elements_per_group_1 = SHARED_MEMORY_ADDRESS(num_elements_per_group_1);
 
-static const uint s_scan_len = SHARED_MEMORY_ADDRESS(num_elements_per_group);
+static const uint s_scan_len = sma_num_elements_per_group + 1u;
 
 groupshared DATA_TYPE s_scan[s_scan_len];
 
@@ -86,8 +88,10 @@ void PrefixScan(uint group_thread_id : SV_GroupThreadID, uint group_id : SV_Grou
     // save the total sum on global memory
     if (group_thread_id == 0u)
     {
-        group_sum_buffer[group_id + group_sum_offset] = s_scan[sma_num_elements_per_group_1];
-        s_scan[sma_num_elements_per_group_1] = 0;
+        DATA_TYPE group_sum = s_scan[sma_num_elements_per_group_minus_1];
+        group_sum_buffer[group_id + group_sum_offset] = group_sum;
+        s_scan[sma_num_elements_per_group_minus_1] = 0;
+        s_scan[sma_num_elements_per_group] = group_sum;
     }
 
     // downsweep step
@@ -112,6 +116,14 @@ void PrefixScan(uint group_thread_id : SV_GroupThreadID, uint group_id : SV_Grou
     }
 
     GroupMemoryBarrierWithGroupSync();
+
+    if (is_inclusive_scan)
+    {
+        ai = group_thread_id + 1u;
+        bi = ai + num_group_threads;
+        ai = SHARED_MEMORY_ADDRESS(ai);
+        bi = SHARED_MEMORY_ADDRESS(bi);
+    }
 
     // copy scanned data to global memory
     if (global_ai < num_elements)

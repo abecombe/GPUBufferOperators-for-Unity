@@ -30,7 +30,7 @@ uint sorting_order;
 
 static const uint num_elements_per_group = NUM_GROUP_THREADS;
 static const uint log_num_elements_per_group = log2(num_elements_per_group);
-static const uint num_elements_per_group_1 = num_elements_per_group - 1u;
+static const uint num_elements_per_group_minus_1 = num_elements_per_group - 1u;
 
 static const uint n_way = 16u;
 static const uint n_way_1 = n_way - 1u;
@@ -79,15 +79,15 @@ inline uint get_key_4_bit(DATA_TYPE data)
 
 inline uint get_value_in_uint16(uint4 uint16_value, uint key)
 {
-    return (uint16_value[key % 4u] >> (key / 4u * 8u)) & 0x000000ffu;
+    return (uint16_value[key / 4u] >> (key % 4u * 8u)) & 0x000000ffu;
 }
 inline void set_value_in_uint16(inout uint4 uint16_value, uint value, uint key)
 {
-    uint16_value[key % 4u] += value << (key / 4u * 8u);
+    uint16_value[key / 4u] += value << (key % 4u * 8u);
 }
 inline uint4 build_s_scan_data(uint key_4_bit)
 {
-    return (uint4)(key_4_bit % 4u == uint4(0u, 1u, 2u, 3u)) << ((key_4_bit / 4u) * 8u);
+    return (uint4)(key_4_bit / 4u == uint4(0u, 1u, 2u, 3u)) << ((key_4_bit % 4u) * 8u);
 }
 
 /**
@@ -127,7 +127,7 @@ void RadixSortLocal(uint group_thread_id : SV_GroupThreadID, uint group_id : SV_
     }
 
     // calculate first index of each 4bit key-value
-    uint4 total = s_scan[num_elements_per_group_1];
+    uint4 total = s_scan[num_elements_per_group_minus_1];
     uint4 first_index = 0u;
     uint run_sum = 0u;
     [unroll(n_way)]

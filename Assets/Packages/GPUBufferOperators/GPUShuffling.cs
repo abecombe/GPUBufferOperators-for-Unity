@@ -122,7 +122,7 @@ namespace Abecombe.GPUBufferOperators
             }
 
             // prefix scan flag data
-            _prefixScan.Scan(_flagScanBuffer);
+            _prefixScan.ExclusiveScan(_flagScanBuffer);
 
             // shuffle elements based on the bijection_shuffle_buffer
             cs.SetBuffer(k_shuffle, "data_in_buffer", dataInBuffer);
