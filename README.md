@@ -89,6 +89,8 @@ void OnDestroy() {
 
 **Based on [Bandwidth-Optimal Random Shuffling for GPUs](https://arxiv.org/pdf/2106.06161)**
 
+**If the buffer size is a power of 2, the calculation is very fast.**
+
 **No restrictions on input data struct or size.**
 
 ## Usage

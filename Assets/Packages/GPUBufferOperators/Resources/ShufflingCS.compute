@@ -1,5 +1,6 @@
 ﻿#pragma kernel ApplyBijectiveFunction
 #pragma kernel ShuffleElements
+#pragma kernel ApplyBijectiveFunctionShuffleElements
 #pragma kernel CopyBuffer
 
 #pragma use_dxc

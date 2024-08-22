@@ -3,6 +3,7 @@
 
 //#pragma kernel ApplyBijectiveFunction
 //#pragma kernel ShuffleElements
+//#pragma kernel ApplyBijectiveFunctionShuffleElements
 //#pragma kernel CopyBuffer
 //#pragma use_dxc
 
@@ -94,6 +95,21 @@ void ShuffleElements(uint thread_id : SV_DispatchThreadID)
             uint frag_scan = frag_scan_buffer_read[thread_id];
             data_out_buffer[frag_scan] = data_in_buffer[W];
         }
+    }
+}
+
+/**
+ * \brief apply bijective function and shuffle elements (num_elements must be a power of 2)
+ */
+[numthreads(NUM_GROUP_THREADS, 1, 1)]
+void ApplyBijectiveFunctionShuffleElements(uint thread_id : SV_DispatchThreadID)
+{
+    thread_id += group_offset * num_elements_per_group;
+
+    if (thread_id < num_elements)
+    {
+        uint W = bijective_function(thread_id);
+        data_out_buffer[thread_id] = data_in_buffer[W];
     }
 }
 

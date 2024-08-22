@@ -13,6 +13,7 @@ namespace Abecombe.GPUBufferOperators
         protected ComputeShader ShufflingCs;
         private int _kernelApplyBijectiveFunction;
         private int _kernelShuffleElements;
+        private int _kernelApplyBijectiveFunctionShuffleElements;
         private int _kernelCopyBuffer;
 
         private GPUPrefixScan _prefixScan = new();
@@ -41,6 +42,7 @@ namespace Abecombe.GPUBufferOperators
             if (!ShufflingCs) LoadComputeShader();
             _kernelApplyBijectiveFunction = ShufflingCs.FindKernel("ApplyBijectiveFunction");
             _kernelShuffleElements = ShufflingCs.FindKernel("ShuffleElements");
+            _kernelApplyBijectiveFunctionShuffleElements = ShufflingCs.FindKernel("ApplyBijectiveFunctionShuffleElements");
             _kernelCopyBuffer = ShufflingCs.FindKernel("CopyBuffer");
 
             _inited = true;
@@ -84,6 +86,7 @@ namespace Abecombe.GPUBufferOperators
             var cs = ShufflingCs;
             var k_bijection = _kernelApplyBijectiveFunction;
             var k_shuffle = _kernelShuffleElements;
+            var k_bijection_shuffle = _kernelApplyBijectiveFunctionShuffleElements;
             var k_copy = _kernelCopyBuffer;
 
             int numElements = dataInBuffer.count;
@@ -113,26 +116,42 @@ namespace Abecombe.GPUBufferOperators
             cs.SetInt("right_side_mask", rightSideMask);
             cs.SetInt("num_rounds", numRounds);
             cs.SetInts("key", _keys);
-            cs.SetBuffer(k_bijection, "bijection_shuffle_buffer_write", _bijectionShuffleBuffer);
-            cs.SetBuffer(k_bijection, "frag_scan_buffer_write", _flagScanBuffer);
-            for (int i = 0; i < numPowerOfTwoGroups; i += MaxDispatchSize)
+
+            if (numElements != numPowerOfTwoElements)
             {
-                cs.SetInt("group_offset", i);
-                cs.Dispatch(k_bijection, Mathf.Min(numPowerOfTwoGroups - i, MaxDispatchSize), 1, 1);
+                cs.SetBuffer(k_bijection, "bijection_shuffle_buffer_write", _bijectionShuffleBuffer);
+                cs.SetBuffer(k_bijection, "frag_scan_buffer_write", _flagScanBuffer);
+                for (int i = 0; i < numPowerOfTwoGroups; i += MaxDispatchSize)
+                {
+                    cs.SetInt("group_offset", i);
+                    cs.Dispatch(k_bijection, Mathf.Min(numPowerOfTwoGroups - i, MaxDispatchSize), 1, 1);
+                }
+
+                // prefix scan flag data
+                _prefixScan.ExclusiveScan(_flagScanBuffer);
+
+                // shuffle elements based on the bijection_shuffle_buffer
+                cs.SetBuffer(k_shuffle, "data_in_buffer", dataInBuffer);
+                cs.SetBuffer(k_shuffle, "data_out_buffer", dataOutBufferIsNull ? _tempBuffer : dataOutBuffer);
+                cs.SetBuffer(k_shuffle, "bijection_shuffle_buffer_read", _bijectionShuffleBuffer);
+                cs.SetBuffer(k_shuffle, "frag_scan_buffer_read", _flagScanBuffer);
+                for (int i = 0; i < numPowerOfTwoGroups; i += MaxDispatchSize)
+                {
+                    cs.SetInt("group_offset", i);
+                    cs.Dispatch(k_shuffle, Mathf.Min(numPowerOfTwoGroups - i, MaxDispatchSize), 1, 1);
+                }
             }
-
-            // prefix scan flag data
-            _prefixScan.ExclusiveScan(_flagScanBuffer);
-
-            // shuffle elements based on the bijection_shuffle_buffer
-            cs.SetBuffer(k_shuffle, "data_in_buffer", dataInBuffer);
-            cs.SetBuffer(k_shuffle, "data_out_buffer", dataOutBufferIsNull ? _tempBuffer : dataOutBuffer);
-            cs.SetBuffer(k_shuffle, "bijection_shuffle_buffer_read", _bijectionShuffleBuffer);
-            cs.SetBuffer(k_shuffle, "frag_scan_buffer_read", _flagScanBuffer);
-            for (int i = 0; i < numPowerOfTwoGroups; i += MaxDispatchSize)
+            else
             {
-                cs.SetInt("group_offset", i);
-                cs.Dispatch(k_shuffle, Mathf.Min(numPowerOfTwoGroups - i, MaxDispatchSize), 1, 1);
+                Debug.Log("numElements is already a power of 2");
+                // apply bijective function and shuffle elements (num_elements must be a power of 2)
+                cs.SetBuffer(k_bijection_shuffle, "data_in_buffer", dataInBuffer);
+                cs.SetBuffer(k_bijection_shuffle, "data_out_buffer", dataOutBufferIsNull ? _tempBuffer : dataOutBuffer);
+                for (int i = 0; i < numGroups; i += MaxDispatchSize)
+                {
+                    cs.SetInt("group_offset", i);
+                    cs.Dispatch(k_bijection_shuffle, Mathf.Min(numGroups - i, MaxDispatchSize), 1, 1);
+                }
             }
 
             if (!dataOutBufferIsNull) return;
