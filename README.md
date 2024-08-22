@@ -62,21 +62,19 @@ void OnDestroy() {
 ```csharp
 GPUPrefixScan prefixScan = new();
 ```
-***PrefixScanCS.compute***
-```text
-#define DATA_TYPE uint
-// you can choose from the data types uint, int, or float.
-```
 
 ### Scan
 ```csharp
-prefixScan.Scan(GraphicsBuffer DataBuffer, out uint TotalSum);
+prefixScan.Scan(GraphicsBuffer DataBuffer, out uint TotalSum, DataType DataType);
 ```
 * **DataBuffer**
   * data buffer to be scanned
 
 * **TotalSum**
   * the total sum of values
+
+* **DataType**
+  * data type (uint, int or float)
 
 ### Dispose
 ```csharp

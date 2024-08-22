@@ -3,10 +3,8 @@
 
 //#pragma kernel PrefixScan
 //#pragma kernel AddGroupSum
-
-#if !defined(DATA_TYPE)
-#define DATA_TYPE uint
-#endif
+//#pragma multi_compile _ NUM_GROUP_THREADS_128 NUM_GROUP_THREADS_256 NUM_GROUP_THREADS_512
+//#pragma multi_compile _ DATA_TYPE_UINT DATA_TYPE_INT DATA_TYPE_FLOAT
 
 #if !defined(NUM_GROUP_THREADS_128) && !defined(NUM_GROUP_THREADS_256) && !defined(NUM_GROUP_THREADS_512)
 #define NUM_GROUP_THREADS_128
@@ -18,6 +16,18 @@
 #define NUM_GROUP_THREADS 256
 #elif defined(NUM_GROUP_THREADS_512)
 #define NUM_GROUP_THREADS 512
+#endif
+
+#if !defined(DATA_TYPE_UINT) && !defined(DATA_TYPE_INT) && !defined(DATA_TYPE_FLOAT)
+#define DATA_TYPE_UINT
+#endif
+
+#if defined(DATA_TYPE_UINT)
+#define DATA_TYPE uint
+#elif defined(DATA_TYPE_INT)
+#define DATA_TYPE int
+#elif defined(DATA_TYPE_FLOAT)
+#define DATA_TYPE float
 #endif
 
 // macro used for computing bank-conflict-free shared memory array indices
