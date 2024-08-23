@@ -48,7 +48,7 @@ void OnDestroy() {
 
 # GPU Prefix Scan for Unity
 
-**GPU Exclusive Prefix Scan using Compute Shader**
+**GPU Inclusive and Exclusive Prefix Scan using Compute Shader**
 
 **Based on [Chapter 39. Parallel Prefix Sum (Scan) with CUDA](https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda)**
 
@@ -65,8 +65,11 @@ GPUPrefixScan prefixScan = new();
 
 ### Scan
 ```csharp
-prefixScan.Scan(GraphicsBuffer DataBuffer, out uint TotalSum, DataType DataType);
+prefixScan.Scan(ScanType ScanType, GraphicsBuffer DataBuffer, out uint TotalSum, DataType DataType);
 ```
+* **ScanType**
+  * inclusive or exclusive scan
+
 * **DataBuffer**
   * data buffer to be scanned
 
