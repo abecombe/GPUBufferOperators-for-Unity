@@ -1,0 +1,22 @@
+{
+    "name": "com.abecombe.gpu-buffer-operators",
+    "displayName": "GPUBufferOperators",
+    "version": "1.0.0",
+    "unity": "2021.3",
+    "description": "GPUBufferOperators for Unity",
+    "author": {
+        "name": "abecombe",
+        "url": "https://github.com/abecombe"
+    },
+    "keywords": [
+        "computeshader",
+        "graphicsbuffer",
+        "sort",
+        "radixsort",
+        "prefixscan",
+        "prefixsum",
+        "shuffle"
+    ],
+    "dependencies": {
+    }
+}

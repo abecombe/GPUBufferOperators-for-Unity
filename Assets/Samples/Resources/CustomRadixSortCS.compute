@@ -12,4 +12,4 @@ struct CustomStruct
 #define DATA_TYPE CustomStruct  // input data struct
 #define GET_KEY(s) s.key        // how to get the key-values used for sorting
 
-#include "Assets/Packages/GPUBufferOperators/GPURadixSort.hlsl"
+#include "Assets/Packages/GPUBufferOperators/Runtime/GPURadixSort.hlsl"

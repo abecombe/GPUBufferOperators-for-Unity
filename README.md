@@ -1,3 +1,13 @@
+# GPU Buffer Operators for Unity
+
+**GraphicsBuffer Operators using Compute Shader**
+
+## Requirements
+* **Unity 2021.3 or later**
+
+## Git URL
+https://github.com/abecombe/GPUBufferOperators-for-Unity.git?path=Assets/Packages/GPUBufferOperators
+
 # GPU Radix Sort for Unity
 
 **GPU Radix Sort using Compute Shader**
