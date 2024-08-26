@@ -5,7 +5,7 @@
 ## Requirements
 * **Unity 2021.3 or later**
 
-## Git URL
+## Git URL for Unity Package Manager
 https://github.com/abecombe/GPUBufferOperators-for-Unity.git?path=Assets/Packages/GPUBufferOperators
 
 # GPU Radix Sort for Unity
