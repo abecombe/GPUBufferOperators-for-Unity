@@ -34,7 +34,7 @@ namespace Abecombe.GPUBufferOperators
 
         protected virtual void LoadComputeShader()
         {
-            ShufflingCs = Resources.Load<ComputeShader>("ShufflingCS");
+            ShufflingCs = Resources.Load<ComputeShader>("GPUShuffling");
         }
 
         private void Init()

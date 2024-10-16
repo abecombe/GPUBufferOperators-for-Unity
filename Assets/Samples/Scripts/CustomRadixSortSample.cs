@@ -30,7 +30,7 @@ public class CustomRadixSort : GPURadixSort
 {
     protected override void LoadComputeShader()
     {
-        RadixSortCs = Resources.Load<ComputeShader>("CustomRadixSortCS");
+        RadixSortCs = Resources.Load<ComputeShader>("CustomRadixSort");
     }
 }
 
@@ -66,7 +66,7 @@ public class CustomRadixSortSample : MonoBehaviour
         }
         _tempBuffer.SetData(dataArr);
 
-        _copyCs = Resources.Load<ComputeShader>("CopyCS");
+        _copyCs = Resources.Load<ComputeShader>("Copy");
         _copyKernel = _copyCs.FindKernel("CopyCustomSortBuffer");
 
         _copyCs.SetBuffer(_copyKernel, "custom_sort_data_buffer", _dataBuffer);

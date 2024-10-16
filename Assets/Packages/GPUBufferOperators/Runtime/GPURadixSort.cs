@@ -46,7 +46,7 @@ namespace Abecombe.GPUBufferOperators
 
         protected virtual void LoadComputeShader()
         {
-            RadixSortCs = Resources.Load<ComputeShader>("RadixSortCS");
+            RadixSortCs = Resources.Load<ComputeShader>("GPURadixSort");
         }
 
         private void Init()

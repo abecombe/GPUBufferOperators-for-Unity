@@ -42,7 +42,7 @@ public class PrefixScanSample : MonoBehaviour
         }
         _tempBuffer.SetData(dataArr);
 
-        _copyCs = Resources.Load<ComputeShader>("CopyCS");
+        _copyCs = Resources.Load<ComputeShader>("Copy");
         _copyKernel = _copyCs.FindKernel("CopyScanBuffer");
 
         _copyCs.SetBuffer(_copyKernel, "scan_data_buffer", _dataBuffer);

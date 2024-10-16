@@ -3,7 +3,5 @@
 
 #pragma multi_compile _ NUM_GROUP_THREADS_128 NUM_GROUP_THREADS_256 NUM_GROUP_THREADS_512
 #pragma multi_compile _ DATA_TYPE_UINT DATA_TYPE_INT DATA_TYPE_FLOAT
-// it seems that the multi_compile in include files is not working properly,
-// so we need to define the NUM_GROUP_THREADS here
 
 #include "../GPUPrefixScan.hlsl"

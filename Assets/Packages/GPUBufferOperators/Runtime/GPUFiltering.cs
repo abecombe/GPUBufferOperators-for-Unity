@@ -32,7 +32,7 @@ namespace Abecombe.GPUBufferOperators
 
         protected virtual void LoadComputeShader()
         {
-            FilteringCs = Resources.Load<ComputeShader>("FilteringCS");
+            FilteringCs = Resources.Load<ComputeShader>("GPUFiltering");
         }
 
         private void Init()

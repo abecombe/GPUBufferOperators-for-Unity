@@ -1,0 +1,4 @@
+﻿#pragma kernel ClearBuffer
+#pragma kernel PrefixScan
+
+#include "../GPUOneSweepPrefixScan.hlsl"

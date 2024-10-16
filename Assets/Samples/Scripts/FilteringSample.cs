@@ -42,7 +42,7 @@ public class FilteringSample : MonoBehaviour
         }
         _tempBuffer.SetData(dataArr);
 
-        _copyCs = Resources.Load<ComputeShader>("CopyCS");
+        _copyCs = Resources.Load<ComputeShader>("Copy");
         _copyKernel = _copyCs.FindKernel("CopyFilteringBuffer");
 
         _copyCs.SetBuffer(_copyKernel, "filtering_data_buffer", _dataBuffer);

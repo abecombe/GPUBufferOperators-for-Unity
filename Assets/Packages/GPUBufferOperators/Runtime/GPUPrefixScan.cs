@@ -39,7 +39,7 @@ namespace Abecombe.GPUBufferOperators
 
         protected virtual void LoadComputeShader()
         {
-            PrefixScanCs = Resources.Load<ComputeShader>("PrefixScanCS");
+            PrefixScanCs = Resources.Load<ComputeShader>("GPUPrefixScan");
         }
 
         private void Init()

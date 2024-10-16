@@ -43,7 +43,7 @@ public class RadixSortSample : MonoBehaviour
         }
         _tempBuffer.SetData(dataArr);
 
-        _copyCs = Resources.Load<ComputeShader>("CopyCS");
+        _copyCs = Resources.Load<ComputeShader>("Copy");
         _copyKernel = _copyCs.FindKernel("CopySortBuffer");
 
         _copyCs.SetBuffer(_copyKernel, "sort_data_buffer", _dataBuffer);
