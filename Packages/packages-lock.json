@@ -1,5 +1,19 @@
 {
   "dependencies": {
+    "asdf.b0nes.gpu_prefix_sums": {
+      "version": "https://github.com/b0nes164/GPUPrefixSums.git?path=/GPUPrefixSumsUnity",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "3d1df3e1f990c36722bbd5f12e55378e693fb65d"
+    },
+    "asdf.b0nes.gpu_sorting": {
+      "version": "https://github.com/b0nes164/GPUSorting.git?path=/GPUSortingUnity",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "09a6081d964b682bbb58838b83ab75aebe7f4e05"
+    },
     "com.unity.collab-proxy": {
       "version": "1.17.7",
       "depth": 0,
@@ -88,9 +102,9 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.androidjni": "1.0.0",
         "com.unity.nuget.newtonsoft-json": "3.0.2",
-        "com.unity.modules.androidjni": "1.0.0"
+        "com.unity.modules.unitywebrequest": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },

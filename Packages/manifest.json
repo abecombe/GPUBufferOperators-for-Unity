@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "asdf.b0nes.gpu_prefix_sums": "https://github.com/b0nes164/GPUPrefixSums.git?path=/GPUPrefixSumsUnity",
+    "asdf.b0nes.gpu_sorting": "https://github.com/b0nes164/GPUSorting.git?path=/GPUSortingUnity",
     "com.unity.collab-proxy": "1.17.7",
     "com.unity.feature.development": "1.0.1",
     "com.unity.ide.rider": "3.0.18",
