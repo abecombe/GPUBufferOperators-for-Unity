@@ -1,0 +1,9 @@
+﻿#pragma kernel InitHistogram
+#pragma kernel BuildHistogram
+#pragma kernel ScanHistogram
+#pragma kernel RadixSort
+
+#define DATA_TYPE uint2  // input data struct
+#define GET_KEY(s) s.x   // how to get the key-values used for sorting
+
+#include "../GPUOneSweepRadixSort.hlsl"
