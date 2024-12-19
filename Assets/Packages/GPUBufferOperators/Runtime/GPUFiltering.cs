@@ -153,11 +153,15 @@ namespace Abecombe.GPUBufferOperators
         /// </summary>
         public void Dispose()
         {
+            if (!_inited) return;
+
             if (_tempBuffer is not null) { _tempBuffer.Release(); _tempBuffer = null; }
             if (_groupSumBuffer is not null) { _groupSumBuffer.Release(); _groupSumBuffer = null; }
             if (_globalPrefixSumBuffer is not null) { _globalPrefixSumBuffer.Release(); _globalPrefixSumBuffer = null; }
 
             _prefixScan.Dispose();
+
+            _inited = false;
         }
     }
 }

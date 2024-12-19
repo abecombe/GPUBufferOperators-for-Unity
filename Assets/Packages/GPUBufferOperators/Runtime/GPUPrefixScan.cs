@@ -325,8 +325,12 @@ namespace Abecombe.GPUBufferOperators
         /// </summary>
         public void Dispose()
         {
+            if (!_inited) return;
+
             if (_groupSumBufferList is not null) { _groupSumBufferList.ForEach(x => x.Release()); _groupSumBufferList = null; }
             if (_totalSumBuffer is not null) { _totalSumBuffer.Release(); _totalSumBuffer = null; }
+
+            _inited = false;
         }
     }
 }

@@ -188,8 +188,12 @@ namespace Abecombe.GPUBufferOperators
         /// </summary>
         public void Dispose()
         {
+            if (!_inited) return;
+
             if (_partitionIndexBuffer is not null) { _partitionIndexBuffer.Release(); _partitionIndexBuffer = null; }
             if (_partitionDescriptorBuffer is not null) { _partitionDescriptorBuffer.Release(); _partitionDescriptorBuffer = null; }
+
+            _inited = false;
         }
     }
 }

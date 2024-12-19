@@ -202,11 +202,15 @@ namespace Abecombe.GPUBufferOperators
         /// </summary>
         public void Dispose()
         {
+            if (!_inited) return;
+
             if (_tempBuffer is not null) { _tempBuffer.Release(); _tempBuffer = null; }
             if (_bijectionShuffleBuffer is not null) { _bijectionShuffleBuffer.Release(); _bijectionShuffleBuffer = null; }
             if (_flagScanBuffer is not null) { _flagScanBuffer.Release(); _flagScanBuffer = null; }
 
             _prefixScan.Dispose();
+
+            _inited = false;
         }
     }
 }
