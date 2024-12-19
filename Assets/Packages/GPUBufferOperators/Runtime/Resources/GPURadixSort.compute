@@ -1,5 +1,8 @@
-﻿#pragma kernel RadixSortLocal
+﻿#pragma kernel ComputeDispatchSize
+#pragma kernel RadixSortLocal
 #pragma kernel GlobalShuffle
+
+#pragma multi_compile _ USE_INDIRECT_DISPATCH
 
 #define DATA_TYPE uint2  // input data struct
 #define GET_KEY(s) s.x   // how to get the key-values used for sorting
